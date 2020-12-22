@@ -51,6 +51,8 @@ function update(t){
 		for (let i=0;i<4;i++){
 			let dCol = myCol-ghostCol[i];
 			let dRow = myRow-ghostRow[i];
+			let oldRow=ghostRow[i];
+			let oldCol=ghostCol[i];
 			if (Math.abs(dCol)>Math.abs(dRow)){
 				if (dCol!=0) ghostCol[i] +=dCol/Math.abs(dCol);
 			} else {
@@ -59,7 +61,18 @@ function update(t){
 			if (ghostCol[i]==myCol && ghostRow[i]==myRow){
 				dead = true;
 			}
-		
+			for(let k=1;k<4;k++){
+				if (ghostCol[i]==ghostCol[k] && ghostRow[k]==ghostRow[k]){
+					ghostRow[i]=oldRow;
+					ghostCol[i]=oldCol;
+				}
+			}
+			for (let j=0; j<NUM_TREES;j++){
+				if (ghostCol[i]==treeCol[j] && ghostRow[i]==treeRow[j]){
+					ghostRow[i]=oldRow
+					ghostCol[i]=oldCol
+				}
+			}
 		}
 		tLastMove = t;
 	}
@@ -68,6 +81,7 @@ function update(t){
 		frmX=(frmX+1)%4;
 		tLastFrm = t;
 	}
+	
 	draw();
 	msg.value=(t);
 	if (!dead) animReq=window.requestAnimationFrame(update)
@@ -88,7 +102,7 @@ function draw(){
 }
 
 function moveOnceKey(event){
-	let oldRow=myRow; 
+	let oldRow=myRow;
 	let oldCol=myCol;
 
 	switch (event.code){
