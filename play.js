@@ -11,6 +11,7 @@ let bg = document.getElementById('grass');
 
 // персонаж, спрайт 32×32 – привидение из пакмана
 let sprites = document.getElementById('sprites');
+let hero = document.getElementById('hero');
 
 let tree = document.getElementById('tree');
 
@@ -56,7 +57,7 @@ function update(t){
 			if (ghostCol[i]==myCol && ghostRow[i]==myRow){
 				dead = true;
 			}
-		
+
 		}
 		tLastMove = t;
 	}
@@ -78,12 +79,29 @@ function draw(){
 			context.drawImage(bg, col*32, row*32);
 		}
 	}
-	context.drawImage(sprites,10*32,0*32,32,32, myCol*32, myRow*32,32,32);
+	switch(lst_mvnt_drct){
+		case "":
+			context.drawImage(hero,0*32,0*32,32,64, myCol*32, myRow*32-32,32,64);
+			break;
+		case "right":
+			context.drawImage(hero,0*32,0*32,32,64, myCol*32, myRow*32-32,32,64);
+			break;
+		case "left":
+			context.drawImage(hero,1*32,0*32,32,64, myCol*32, myRow*32-32,32,64);
+			break;
+		case "up":
+			context.drawImage(hero,3*32,0*32,32,64, myCol*32, myRow*32-32,32,64);
+			break;
+		case "down":
+			context.drawImage(hero,2*32,0*32,32,64, myCol*32, myRow*32-32,32,64);
+			break;
+	}
+	
 	for (let i=0;i<NUM_TREES; i++)context.drawImage(tree, treeCol[i]*32, treeRow[i]*32);
 	for (let i=0;i<4; i++)context.drawImage(sprites,i*2*32,0*32,32,32, ghostCol[i]*32, ghostRow[i]*32,32,32);
 
 }
-
+let lst_mvnt_drct ="";
 function moveOnceKey(event){
 	let oldRow=myRow; 
 	let oldCol=myCol;
@@ -92,18 +110,22 @@ function moveOnceKey(event){
 		case 'KeyS':
 		case 'ArrowDown':
 			++myRow;
+			lst_mvnt_drct = "down";
 			break;
 		case 'KeyW':
 		case 'ArrowUp':
 			--myRow;
+			lst_mvnt_drct = "up";
 			break;
 		case 'KeyD':
 		case 'ArrowRight':
 			++myCol;
+			lst_mvnt_drct = "right";
 			break;
 		case 'KeyA':
 		case 'ArrowLeft':
 			--myCol;
+			lst_mvnt_drct = "left";
 			break;
 	}
 	if (myCol<0 || myCol>NUM_COLS-1) myCol=oldCol; 
