@@ -16,6 +16,9 @@ let bg = document.getElementById('grass');
 // персонаж, спрайт 32×32 – привидение из пакмана
 let sprites = document.getElementById('sprites');
 
+let hero = document.getElementById('hero');
+let zombie = document.getElementById('zombie');
+
 let tree = document.getElementById('tree');
 
 // координаты персонажа, столбец и строка, считая с нуля
@@ -44,38 +47,43 @@ function init(){
 
 let tLastMove,tLastFrm;
 
+let oldghostCol = [];
+let oldghostRow = [];
+let ghst_last_mvnt_drct =[]
 function update(t){
 	let dead = false;
 	if(!tLastMove) tLastMove = t;
-	if(!tLastFrm) tLastFrm = t;
+	
 	if(t - tLastMove>=GHOST_MOVEMENT_TIME){
 		for (let i=0;i<NUM_ZOMBIE;i++){
 			let dCol = myCol-ghostCol[i];
 			let dRow = myRow-ghostRow[i];
-			let oldRow=ghostRow[i];
-			let oldCol=ghostCol[i];
+
+			oldghostCol[i] = ghostCol[i];
+			oldghostRow[i] = ghostRow[i];
+
 			if (Math.abs(dCol)>Math.abs(dRow)){
 				if (dCol!=0) ghostCol[i] +=dCol/Math.abs(dCol);
 			} else {
 				if (dRow!=0) ghostRow[i] +=dRow/Math.abs(dRow);
 			}
+
 			if (ghostCol[i]==myCol && ghostRow[i]==myRow){
 				dead = true;
 			}
-			for (let j=0; j<NUM_TREES;j++){
-				if (ghostCol[i]==treeCol[j] && ghostRow[i]==treeRow[j]){
-					ghostRow[i]=oldRow
-					ghostCol[i]=oldCol
-				}
-			}
+
+			for (let i=0;i<4;i++)
+			if (oldghostCol[i] - ghostCol[i]>=0.9) {ghst_last_mvnt_drct[i]="up"; }
+			if (oldghostCol[i] - ghostCol[i]<=-0.9) {ghst_last_mvnt_drct[i]="down"; }
+			if (oldghostRow[i] - ghostRow[i]>=0.9) {ghst_last_mvnt_drct[i]="left"; }
+			if (oldghostRow[i] - ghostRow[i]<=-0.9) {ghst_last_mvnt_drct[i]="right"; }
+
+
+
 		}
 		tLastMove = t;
 	}
-	if (t-tLastFrm>=100){
-		frmX=(frmX+1)%2;
-		frmX=(frmX+1)%4;
-		tLastFrm = t;
-	}
+	
 	draw();
 	msg.value=(t);
 	if (!dead) animReq=window.requestAnimationFrame(update)
@@ -89,28 +97,35 @@ function draw(){
 			context.drawImage(bg, col*32, row*32);
 		}
 	}
-	switch(lst_mvnt_drct){
-		case "":
-			context.drawImage(hero,0*32,0*32,32,64, myCol*32, myRow*32-32,32,64);
-			break;
-		case "right":
-			context.drawImage(hero,0*32,0*32,32,64, myCol*32, myRow*32-32,32,64);
-			break;
-		case "left":
-			context.drawImage(hero,1*32,0*32,32,64, myCol*32, myRow*32-32,32,64);
-			break;
-		case "up":
-			context.drawImage(hero,3*32,0*32,32,64, myCol*32, myRow*32-32,32,64);
-			break;
-		case "down":
-			context.drawImage(hero,2*32,0*32,32,64, myCol*32, myRow*32-32,32,64);
-			break;
-	}
+	mvnt_drct(lst_mvnt_drct,myCol,myRow);
 	
 	for (let i=0;i<NUM_TREES; i++)context.drawImage(tree, treeCol[i]*32, treeRow[i]*32);
-	for (let i=0;i<4; i++)context.drawImage(sprites,i*2*32,0*32,32,32, ghostCol[i]*32, ghostRow[i]*32,32,32);
+	for (let i=0;i<4; i++)
+	mvnt_drct(ghst_last_mvnt_drct[i],ghostCol[i],ghostRow[i]);	
+		
 
 }
+
+function mvnt_drct(lst_mvnt_drct,charCol,charRow) {
+switch(lst_mvnt_drct){
+		case "":
+			context.drawImage(hero,0*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			break;
+		case "right":
+			context.drawImage(hero,0*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			break;
+		case "left":
+			context.drawImage(hero,1*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			break;
+		case "up":
+			context.drawImage(hero,3*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			break;
+		case "down":
+			context.drawImage(hero,2*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			break;
+	}	
+}
+
 let lst_mvnt_drct ="";
 function moveOnceKey(event){
 	let oldRow=myRow;
