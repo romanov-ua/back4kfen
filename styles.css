@@ -1,0 +1,6 @@
+body {font-family: "Segoe UI", "SF Pro Display", sans-serif; background-color:white;}
+p {font-size:12px; color:gray; text-align:left;}
+div#info {width:520px; margin:1em auto; color:black;} 
+canvas {border: solid 1px black;}
+img {vertical-align: middle; margin:7px;}
+body {text-align:center;}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset=utf-8>
+  <title>js02: Двигаем спрайт</title>
+  <link rel="stylesheet" href="styles.css">
+<body>
+  <h1>Двигаем спрайт</h1>
+
+  <canvas width="640" height="480" id="cnv">
+  </canvas>
+  
+  <div id="info">
+    Для передвижения нажимайте клавиши со стрелками или A,S,W,D.
+
+    <p style="display: none">
+      <img id="grass" src="grass.png">
+      <img id="tree" src="tree.png">
+      Grass tile by qubodup, Bart K., Blarumyrran 
+      <a href="http://opengameart.org">opengameart.org</a> 
+      <br>
+      <img id="sprites" src="chompersprites.png">
+      Ghost sprite from <a href="https://www.construct.net/en/tutorials/cloning-classics-pacman-171">
+      Construct 2 - Cloning The Classics: Pacman</a>
+    </p>
+
+    <input id="msg" disabled value="go!">
+  </div>
+
+  <script src="play.js"></script>
+</body>
+</html>
