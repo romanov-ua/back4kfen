@@ -8,6 +8,7 @@ let context = board
 const NUM_COLS=20, NUM_ROWS=20;
 const GHOST_MOVEMENT_TIME=200;
 const NUM_TREES = 10;
+const NUM_ZOMBIE = 4;
 
 // фоновая клетка 32×32 - трава
 let bg = document.getElementById('grass');
@@ -48,7 +49,7 @@ function update(t){
 	if(!tLastMove) tLastMove = t;
 	if(!tLastFrm) tLastFrm = t;
 	if(t - tLastMove>=GHOST_MOVEMENT_TIME){
-		for (let i=0;i<4;i++){
+		for (let i=0;i<NUM_ZOMBIE;i++){
 			let dCol = myCol-ghostCol[i];
 			let dRow = myRow-ghostRow[i];
 			let oldRow=ghostRow[i];
