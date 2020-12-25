@@ -6,9 +6,10 @@ let board = document.getElementById('cnv').getContext('2d');
 let context = board
 
 const NUM_COLS=20, NUM_ROWS=20;
-const GHOST_MOVEMENT_TIME=200;
+const GHOST_MOVEMENT_TIME=350;
 const NUM_TREES = 10;
 const NUM_ZOMBIE = 4;
+
 
 // фоновая клетка 32×32 - трава
 let bg = document.getElementById('grass');
@@ -32,9 +33,28 @@ let ghostRow, ghostCol,treeCol = new Array(4),treeRow = new Array(4);
 
 let frmX=0, frmY=0;
 
+let grid = new Array(NUM_COLS);
+
+let canvaswidth = 352;
+let canvasheight = 352;
+
 function init(){
+
 	ghostCol = [0,0,NUM_COLS-1,NUM_COLS-1]
 	ghostRow = [0,NUM_ROWS-1,0,NUM_ROWS-1]
+	// Сетка 
+	for (var i = 0; i<NUM_COLS; i++){
+		grid[i] = new Array(NUM_ROWS);
+	}
+
+	for (var i = 0; i<NUM_COLS; i++){
+		for (var j = 0; j<NUM_ROWS; j++){
+			grid[i][j]
+		}
+	}
+
+	
+
 	for (let i=0; i <NUM_TREES; i++){
 		do {
 			treeCol[i] = Math.floor(Math.random()*NUM_COLS);
@@ -49,9 +69,10 @@ let tLastMove,tLastFrm;
 
 let oldghostCol = [];
 let oldghostRow = [];
-let ghst_last_mvnt_drct =[]
+let ghst_last_mvnt_drct =[];
+let dead = false;
 function update(t){
-	let dead = false;
+	
 	if(!tLastMove) tLastMove = t;
 	
 	if(t - tLastMove>=GHOST_MOVEMENT_TIME){
@@ -72,15 +93,14 @@ function update(t){
 				dead = true;
 			}
 
-			for (let i=0;i<4;i++)
-			if (oldghostCol[i] - ghostCol[i]>=0.9) {ghst_last_mvnt_drct[i]="up"; }
-			if (oldghostCol[i] - ghostCol[i]<=-0.9) {ghst_last_mvnt_drct[i]="down"; }
-			if (oldghostRow[i] - ghostRow[i]>=0.9) {ghst_last_mvnt_drct[i]="left"; }
-			if (oldghostRow[i] - ghostRow[i]<=-0.9) {ghst_last_mvnt_drct[i]="right"; }
-
-
-
+			for (let i=0;i<4;i++){
+			if (oldghostCol[i] - ghostCol[i]>=0.9) {ghst_last_mvnt_drct[i]="left"; }
+			if (oldghostCol[i] - ghostCol[i]<=-0.9) {ghst_last_mvnt_drct[i]="right"; }
+			if (oldghostRow[i] - ghostRow[i]>=0.9) {ghst_last_mvnt_drct[i]="up"; }
+			if (oldghostRow[i] - ghostRow[i]<=-0.9) {ghst_last_mvnt_drct[i]="down"; }
+			}
 		}
+
 		tLastMove = t;
 	}
 	
@@ -89,9 +109,28 @@ function update(t){
 	if (!dead) animReq=window.requestAnimationFrame(update)
 
 }
-
+function clamp(value, min, max){
+    if(value < min) return min;
+    else if(value > max) return max;
+    return value;
+}
 
 function draw(){
+	
+
+
+	//start of viewport
+	context.setTransform(1,0,0,1,0,0);//reset the transform matrix as it is cumulative
+    context.clearRect(0, 0, canvaswidth, canvasheight);//clear the viewport AFTER the matrix is reset
+
+    //Clamp the camera position to the world bounds while centering the camera around the player                                             
+    var camX = clamp(-myCol*32 + canvaswidth/2, -1000, 1000 - canvaswidth);
+    var camY = clamp(-myRow*32 + canvasheight/2, -1000, 1000 - canvasheight);
+
+    context.translate( camX, camY );
+    //end of viewport
+    //context.scale(2, 2);
+
 	for (let col = 0; col < NUM_COLS; col++){	
 		for (let row = 0; row < NUM_ROWS; row++){
 			context.drawImage(bg, col*32, row*32);
@@ -102,7 +141,12 @@ function draw(){
 	for (let i=0;i<NUM_TREES; i++)context.drawImage(tree, treeCol[i]*32, treeRow[i]*32);
 	for (let i=0;i<4; i++)
 	mvnt_drct(ghst_last_mvnt_drct[i],ghostCol[i],ghostRow[i]);	
-		
+ /*context.drawImage(tree, 2*32, 2*32);
+ context.drawImage(tree, 1*32, 2*32);
+ context.drawImage(tree, 2*32, 1*32);
+
+ context.drawImage(tree, 2*32, 0*32);
+ context.drawImage(tree, 0*32, 2*32);		*/
 
 }
 
@@ -162,6 +206,13 @@ function moveOnceKey(event){
 		}
 	}
 }
+
+
+
+
+
+
+
 
 window.onload = init;
 window.onkeyup = moveOnceKey;
