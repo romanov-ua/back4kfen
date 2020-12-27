@@ -12,25 +12,32 @@ let board = document.getElementById('cnv').getContext('2d');
 let context = board
 
 const NUM_COLS=10, NUM_ROWS=10;
+//Зомби
 const GHOST_MOVEMENT_TIME=1000;
 const NUM_TREES = 10;
 const NUM_ZOMBIE = 4;
 let zombie_stats = [];
-let lst_mvnt_drct;
-// фоновая клетка 32×32 - трава
-let bg = document.getElementById('grass');
 
-// персонаж, спрайт 32×32 – привидение из пакмана
+
+
+
+// Спрайты
 let sprites = document.getElementById('sprites');
-
+let bg = document.getElementById('grass');
 let hero = document.getElementById('hero');
 let zombie = document.getElementById('zombie');
-
 let tree = document.getElementById('tree');
-
-// координаты персонажа, столбец и строка, считая с нуля
+let handgun = document.getElementById('handgun');
+// Переменные персонажа
 let myCol = Math.round(NUM_COLS/2), myRow = Math.round(NUM_ROWS/2);
+let lst_mvnt_drct;
+//Оружие
+let handgun_picked = false;
+let weapon = "";
+let ammo = 0;
 
+let handgunCol=3;
+let handgunRow=3;
 // абзац с сообщением 
 let msg = document.getElementById('msg');
 
@@ -50,7 +57,7 @@ function Spot(i,j){
 }
 
 function zombie_condition(i){
-	this.state = "wandering";
+	this.state = "hunting";
 	this.live = true;
 }
 
@@ -213,6 +220,9 @@ function draw(){
 		}
 
 	}
+	if ( handgun_picked == false) {
+		context.drawImage(handgun, handgunCol*32, handgunRow*32);
+	}
 	mvnt_drct(lst_mvnt_drct,myCol,myRow);	
  /*context.drawImage(tree, 2*32, 2*32);
  context.drawImage(tree, 1*32, 2*32);
@@ -283,11 +293,18 @@ function moveOnceKey(event){
 	}
 	if (myCol<0 || myCol>NUM_COLS-1) myCol=oldCol; 
 	if (myRow<0 || myRow>NUM_ROWS-1) myRow=oldRow;
-	
-if (checkWall(myCol,myRow,oldCol,oldRow)==true) {
-	myCol=oldCol;
-	myRow=oldRow;
-}
+	if (myCol==0 && myRow==0) {
+		myCol = 9;
+		myRow = 9;
+	}
+	if (checkWall(myCol,myRow,oldCol,oldRow)==true) {
+		myCol=oldCol;
+		myRow=oldRow;
+	}
+	if (myRow==handgunRow && myCol==handgunCol){
+		weapon = "handgun";
+		handgun_picked = true;
+	}
 	
 }
 function checkWall(newCol,newRow,previosCol,previosRow){
@@ -300,63 +317,64 @@ function checkWall(newCol,newRow,previosCol,previosRow){
 }
 
 function fire(direction){
-	switch(direction){
-		case 'down':
-		for (let i =myRow;i<NUM_ROWS;i++){
-			if (grid[myCol][i].wall) {
-				break;
-			}
-			for (let j =0;j<NUM_ZOMBIE;j++){
-				if (ghostRow[j]==i && ghostCol[j]==myCol){
-					zombie_stats[j].state="dead";								
+	if (weapon=="handgun") {
+		switch(direction){
+			case 'down':
+			for (let i =myRow;i<NUM_ROWS;i++){
+				if (grid[myCol][i].wall) {
+					break;
+				}
+				for (let j =0;j<NUM_ZOMBIE;j++){
+					if (ghostRow[j]==i && ghostCol[j]==myCol){
+						zombie_stats[j].state="dead";								
+					}
 				}
 			}
-		}
-		break;
-		case 'up':
-		for (let i = myRow;i>=0;i--){
-			if (grid[myCol][i].wall) {
+			break;
+			case 'up':
+			for (let i = myRow;i>=0;i--){
+				if (grid[myCol][i].wall) {
 
-				break;
-			}
-			for (let j =0;j<NUM_ZOMBIE;j++){
-				if (ghostRow[j]==i && ghostCol[j]==myCol){
+					break;
+				}
+				for (let j =0;j<NUM_ZOMBIE;j++){
+					if (ghostRow[j]==i && ghostCol[j]==myCol){
 
-					zombie_stats[j].state="dead";								
+						zombie_stats[j].state="dead";								
+					}
 				}
 			}
-		}
-		break;
-		case 'right':
-		for (let i = myCol;i < NUM_COLS;i++){
-			if (grid[i][myRow].wall) {
+			break;
+			case 'right':
+			for (let i = myCol;i < NUM_COLS;i++){
+				if (grid[i][myRow].wall) {
 
-				break;
-			}
-			for (let j =0;j<NUM_ZOMBIE;j++){
-				if (ghostCol[j]==i && ghostRow[j]==myRow){
+					break;
+				}
+				for (let j =0;j<NUM_ZOMBIE;j++){
+					if (ghostCol[j]==i && ghostRow[j]==myRow){
 
-					zombie_stats[j].state="dead";								
+						zombie_stats[j].state="dead";								
+					}
 				}
 			}
-		}
-		break;
-		case 'left':
-		for (let i = myCol;i >= 0;i--){
-			if (grid[i][myRow].wall) {
+			break;
+			case 'left':
+			for (let i = myCol;i >= 0;i--){
+				if (grid[i][myRow].wall) {
 
-				break;
-			}
-			for (let j =0;j<NUM_ZOMBIE;j++){
-				if (ghostCol[j]==i && ghostRow[j]==myRow){
+					break;
+				}
+				for (let j =0;j<NUM_ZOMBIE;j++){
+					if (ghostCol[j]==i && ghostRow[j]==myRow){
 
-					zombie_stats[j].state="dead";								
+						zombie_stats[j].state="dead";								
+					}
 				}
 			}
+			break;
 		}
-		break;
 	}
-
 }
 
 
