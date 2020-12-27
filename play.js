@@ -1,4 +1,10 @@
-//komment poluchaetsya da 
+function removeFromArray(arr,elt) {
+	for (let i=arr.length-1; i>=0;i--){
+		if (arr[i] == elt) {
+			arr.splice(i,1);
+		}
+	}
+}
 
 
 // холст для рисования - игровое поле
@@ -6,10 +12,10 @@ let board = document.getElementById('cnv').getContext('2d');
 let context = board
 
 const NUM_COLS=10, NUM_ROWS=10;
-const GHOST_MOVEMENT_TIME=500;
+const GHOST_MOVEMENT_TIME=1000;
 const NUM_TREES = 10;
 const NUM_ZOMBIE = 4;
-let zombie_state = [];
+let zombie_stats = [];
 let lst_mvnt_drct;
 // фоновая клетка 32×32 - трава
 let bg = document.getElementById('grass');
@@ -28,9 +34,9 @@ let myCol = Math.round(NUM_COLS/2), myRow = Math.round(NUM_ROWS/2);
 // абзац с сообщением 
 let msg = document.getElementById('msg');
 
-// после загрузки картинок рисуем начальное состояние поля
-let ghostRow, ghostCol,treeCol = new Array(4),treeRow = new Array(4);
-
+let ghostRow, ghostCol = new Array (NUM_ZOMBIE);
+let treeRow = new Array(NUM_TREES);
+let treeCol = new Array(NUM_TREES);
 let frmX=0, frmY=0;
 
 let grid = new Array(NUM_COLS);
@@ -44,7 +50,7 @@ function Spot(i,j){
 }
 
 function zombie_condition(i){
-	this.state = "hunting";
+	this.state = "wandering";
 	this.live = true;
 }
 
@@ -65,7 +71,7 @@ function init(){
 	}
 
 	for (let i =0;i<NUM_ZOMBIE;i++){
-		zombie_state[i]= new zombie_condition(i);
+		zombie_stats[i]= new zombie_condition(i);
 	}
 	
 
@@ -93,7 +99,19 @@ let oldghostRow = [];
 let ghst_last_mvnt_drct =[];
 let dead = false;
 function update(t){
+	console.log(NUM_ZOMBIE);
+	for (let k=0;k<NUM_ZOMBIE;k++){ 
+		if (zombie_stats[k].live=false) {
 
+			NUM_ZOMBIE.splice(k, 1);
+			ghostCol.splice(k, 1);
+			removeFromArray(ghostRow,k);
+			removeFromArray(oldghostCol,k);
+			removeFromArray(oldghostRow,k);
+			console.log(NUM_ZOMBIE);
+			console.log(z);
+		}
+	}
 
 
 	if(!tLastMove) tLastMove = t;
@@ -103,7 +121,7 @@ function update(t){
 		for (let i=0;i<NUM_ZOMBIE;i++){
 			oldghostCol[i] = ghostCol[i];
 			oldghostRow[i] = ghostRow[i];
-			if (zombie_state[i].state == "hunting") {
+			if (zombie_stats[i].state == "hunting") {
 				let dCol = myCol-ghostCol[i];
 				let dRow = myRow-ghostRow[i];
 
@@ -122,14 +140,14 @@ function update(t){
 					dead = true;
 				}
 
-				for (let i=0;i<4;i++){
+				for (let i=0;i<NUM_ZOMBIE;i++){
 					if (oldghostCol[i] - ghostCol[i]>=0.9) {ghst_last_mvnt_drct[i]="left"; }
 					if (oldghostCol[i] - ghostCol[i]<=-0.9) {ghst_last_mvnt_drct[i]="right"; }
 					if (oldghostRow[i] - ghostRow[i]>=0.9) {ghst_last_mvnt_drct[i]="up"; }
 					if (oldghostRow[i] - ghostRow[i]<=-0.9) {ghst_last_mvnt_drct[i]="down"; }
 				}
 			}
-			if (zombie_state[i].state == "standing") {
+			if (zombie_stats[i].state == "wandering") {
 				let random_number = Math.random();
 				if (random_number<0.1) ghostRow[i]++;
 				if (random_number>0.1 && random_number<0.2) ghostRow[i]--;
@@ -140,6 +158,9 @@ function update(t){
 					ghostRow[i]=oldghostRow[i];
 				}
 
+			}
+			if (zombie_stats[i].state == "dead") {
+				context.drawImage(tree, ghostCol[i]*32, ghostRow[i]*32);
 			}
 		}
 
@@ -181,7 +202,17 @@ function draw(){
 	
 	
 	for (let i=0;i<NUM_TREES; i++)context.drawImage(tree, treeCol[i]*32, treeRow[i]*32);
-	for (let i=0;i<NUM_ZOMBIE; i++) mvnt_drct(ghst_last_mvnt_drct[i],ghostCol[i],ghostRow[i]);
+	for (let i=0;i<NUM_ZOMBIE; i++) {
+		if (zombie_stats[i].state!="dead"){
+
+			mvnt_drct(ghst_last_mvnt_drct[i],ghostCol[i],ghostRow[i]);
+		}
+		if (zombie_stats[i].state=="dead"){
+
+			context.drawImage(tree, ghostCol[i]*32, ghostRow[i]*32);
+		}
+
+	}
 	mvnt_drct(lst_mvnt_drct,myCol,myRow);	
  /*context.drawImage(tree, 2*32, 2*32);
  context.drawImage(tree, 1*32, 2*32);
@@ -217,24 +248,36 @@ function moveOnceKey(event){
 	let oldCol=myCol;
 
 	switch (event.code){
-		case 'KeyS':
-		case 'ArrowDown':
+		case 'KeyS':		
 			++myRow;
 			lst_mvnt_drct = "down";
 			break;
-		case 'KeyW':
-		case 'ArrowUp':
+		case 'KeyW':		
 			--myRow;
 			lst_mvnt_drct = "up";
 			break;
-		case 'KeyD':
-		case 'ArrowRight':
+		case 'KeyD':		
 			++myCol;
 			lst_mvnt_drct = "right";
 			break;
-		case 'KeyA':
-		case 'ArrowLeft':
+		case 'KeyA':	
 			--myCol;
+			lst_mvnt_drct = "left";
+			break;
+		case 'ArrowDown':
+			fire("down");
+			lst_mvnt_drct = "down";
+			break;
+		case 'ArrowUp':
+			fire("up");
+			lst_mvnt_drct = "up";
+			break;
+		case 'ArrowRight':
+			fire("right");
+			lst_mvnt_drct = "right";
+			break;
+		case 'ArrowLeft':
+			fire("left");
 			lst_mvnt_drct = "left";
 			break;
 	}
@@ -256,6 +299,66 @@ function checkWall(newCol,newRow,previosCol,previosRow){
 	return false;
 }
 
+function fire(direction){
+	switch(direction){
+		case 'down':
+		for (let i =myRow;i<NUM_ROWS;i++){
+			if (grid[myCol][i].wall) {
+				break;
+			}
+			for (let j =0;j<NUM_ZOMBIE;j++){
+				if (ghostRow[j]==i && ghostCol[j]==myCol){
+					zombie_stats[j].state="dead";								
+				}
+			}
+		}
+		break;
+		case 'up':
+		for (let i = myRow;i>=0;i--){
+			if (grid[myCol][i].wall) {
+
+				break;
+			}
+			for (let j =0;j<NUM_ZOMBIE;j++){
+				if (ghostRow[j]==i && ghostCol[j]==myCol){
+
+					zombie_stats[j].state="dead";								
+				}
+			}
+		}
+		break;
+		case 'right':
+		for (let i = myCol;i < NUM_COLS;i++){
+			if (grid[i][myRow].wall) {
+
+				break;
+			}
+			for (let j =0;j<NUM_ZOMBIE;j++){
+				if (ghostCol[j]==i && ghostRow[j]==myRow){
+
+					zombie_stats[j].state="dead";								
+				}
+			}
+		}
+		break;
+		case 'left':
+		for (let i = myCol;i >= 0;i--){
+			if (grid[i][myRow].wall) {
+
+				break;
+			}
+			for (let j =0;j<NUM_ZOMBIE;j++){
+				if (ghostCol[j]==i && ghostRow[j]==myRow){
+
+					zombie_stats[j].state="dead";								
+				}
+			}
+		}
+		break;
+	}
+
+}
+
 
 
 
@@ -265,3 +368,4 @@ function checkWall(newCol,newRow,previosCol,previosRow){
 
 window.onload = init;
 window.onkeyup = moveOnceKey;
+document.onmouseup = fire;
