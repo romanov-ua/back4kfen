@@ -165,18 +165,24 @@ function update(t){
 			}
 			if (zombie_stats[i].state == "wandering") {
 				let random_number = Math.random();
-				if (random_number<0.1) ghostRow[i]++;
-				if (random_number>0.1 && random_number<0.2) ghostRow[i]--;
-				if (random_number>0.3 && random_number<0.3) ghostCol[i]++;
-				if (random_number>0.3 && random_number<0.4) ghostCol[i]--;
+				if (random_number<0.1) {ghostRow[i]++;ghst_last_mvnt_drct[i]="down";}
+				if (random_number>0.1 && random_number<0.2) {ghostRow[i]--;ghst_last_mvnt_drct[i]="up";}
+				if (random_number>0.3 && random_number<0.4) {ghostCol[i]++;ghst_last_mvnt_drct[i]="right";}
+				if (random_number>0.4 && random_number<0.5) {ghostCol[i]--;ghst_last_mvnt_drct[i]="left";}
 				if (checkWall(ghostCol[i],ghostRow[i],oldghostCol[i],oldghostRow[i])==true) {
 					ghostCol[i]=oldghostCol[i];
 					ghostRow[i]=oldghostRow[i];
+				}
+				if (ghostCol[i]==myCol && ghostRow[i]==myRow){
+					dead = true;
 				}
 
 			}
 			if (zombie_stats[i].state == "dead") {
 				context.drawImage(tree, ghostCol[i]*32, ghostRow[i]*32);
+			}
+			if (oldghostCol[i]==ghostCol[i] && oldghostRow[i]==ghostRow[i] && zombie_stats[i].state != "dead"){
+				zombie_stats[i].state = "wandering"
 			}
 		}
 
