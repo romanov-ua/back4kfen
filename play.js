@@ -26,6 +26,7 @@ let gameover = document.getElementById('gameover');
 
 let fuse = document.getElementById('fuse');
 let keys = document.getElementById('keys');
+let door = document.getElementById('door');
 
 let hero = document.getElementById('hero');
 let heroWithGun = document.getElementById('heroWithGun');
@@ -61,7 +62,7 @@ hero_sprites[4]=heroFiring;
 //Оружие
 let handgun_picked = false;
 let weapon = "";
-let ammo = 4;
+let ammo = 10;
 let handgunCol=20;
 let handgunRow=57;
 
@@ -101,7 +102,12 @@ let elevatorRow3 = 56;
 let door_canteen_opened = false;
 let door_canteenCol =27;
 let door_canteenCol1 =28;
-let door_canteenRow =46;
+let door_canteenRow =45;
+
+let door_5floor_opened = false;
+let door_5floorCol =72;
+let door_5floorCol1 =73;
+let door_5floorRow =15;
 
 let door_switchCol =0;
 let door_switchRow =13;
@@ -304,14 +310,14 @@ function initWalls(){
 const GHOST_MOVEMENT_TIME=320;
 const RUNNER_MOVEMENT_TIME=200;
 
-const NUM_ZOMBIE = 10;
+const NUM_ZOMBIE = 13;
 let zombie_stats = [];
 let ghostRow, ghostCol = new Array (NUM_ZOMBIE);
 
 function init(){
 	//Позиции зомби
-	ghostCol = [76,24,33,44,47,9,83,12,13,12,]
-	ghostRow = [70,18,54,50,40,48,18,85,83,81]
+	ghostCol = [76,24,33,44,47,9,83,12,13,12,24,28,31]
+	ghostRow = [70,18,54,50,40,48,18,85,83,81,38,37,39]
 	// Сетка 
 	for (let i =0;i<NUM_COLS;i++){
 		grid[i]=new Array(NUM_ROWS);
@@ -525,7 +531,15 @@ function draw(){
 		}
 
 	}
-	
+	if ( door_5floor_opened == false){
+		context.drawImage(door, door_5floorCol*32, door_5floorRow*32);
+	}
+	if ( fuse_door_opened == false){
+		context.drawImage(door, 36*32, (fuse_doorRow-1)*32);
+	}
+	if ( door_canteen_opened == false){
+		context.drawImage(door, door_canteenCol*32,door_canteenRow*32);
+	}
 	if ( fuse1_picked == false) {
 		context.drawImage(fuse, fuse1Col*32, fuse1Row*32);	
 	}
@@ -717,11 +731,17 @@ function moveOnceKey(event){
 				console.log("door_opened !");
 				fuse_door_opened = true;
 			}
-			if ((myCol==door_canteenCol || myCol==door_canteenCol1) && myRow==door_canteenRow &&  door_canteen_opened==false){
+			if ((myCol==door_canteenCol || myCol==door_canteenCol1) && myRow==door_canteenRow+1 &&  door_canteen_opened==false){
 				grid[door_canteenCol][45].wall = false;
 				grid[door_canteenCol1][45].wall = false;
 				console.log("door_opened !");
 				door_canteen_opened = true;
+			}
+			if ((myCol==door_5floorCol || myCol==door_5floorCol1) && myRow==door_5floorRow+1 &&  door_5floor_opened==false){
+				grid[door_5floorCol][15].wall = false;
+				grid[door_5floorCol1][15].wall = false;
+				console.log("door_opened !");
+				door_5floor_opened = true;
 			}
 			if (keys_picked == true && myCol==door_switchCol && myRow==door_switchRow){
 				grid[myCol][myRow-1].wall = false;
