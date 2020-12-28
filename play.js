@@ -310,8 +310,8 @@ let ghostRow, ghostCol = new Array (NUM_ZOMBIE);
 
 function init(){
 	//Позиции зомби
-	ghostCol = [76,24,13,14,23,25,25,28,30,30,]
-	ghostRow = [70,18,86,86,85,84,86,85,83,81]
+	ghostCol = [76,24,33,44,47,9,83,12,13,12,]
+	ghostRow = [70,18,54,50,40,48,18,85,83,81]
 	// Сетка 
 	for (let i =0;i<NUM_COLS;i++){
 		grid[i]=new Array(NUM_ROWS);
