@@ -22,6 +22,7 @@ const NUM_TREES = 10;
 const NUM_ZOMBIE = 10;
 let zombie_stats = [];
 let ghostRow, ghostCol = new Array (NUM_ZOMBIE);
+let lines = [];
 
 
 // Спрайты
@@ -358,7 +359,7 @@ function update(t){
 			oldghostCol[i] = ghostCol[i];
 			oldghostRow[i] = ghostRow[i];
 
-			grid[ghostCol[i]][ghostRow[i]].wall=true;
+			
 			if (zombie_stats[i].state == "hunting") {
 				let dCol = myCol-ghostCol[i];
 				let dRow = myRow-ghostRow[i];
@@ -410,6 +411,10 @@ function update(t){
 			if (zombie_stats[i].state == "standing"){
 				
 			}
+			zombie_stats[i].state =  drawLine(ghostCol[i],ghostRow[i],myCol,myRow);
+			console.log(zombie_stats[i].state);
+			
+			lines = [];
 		}
 
 		tLastMove = t;
@@ -423,6 +428,41 @@ function update(t){
 	if (!dead) animReq=window.requestAnimationFrame(update)
 
 
+}
+let plot = function(x,y) {
+	if(isFinite(x) && isFinite(y)){
+		lines.push(x,y);	
+    }
+}
+function drawLine(x1, y1, x2, y2){
+	let deltaX = Math.abs(x2 - x1);
+	let deltaY = Math.abs(y2 - y1);
+	let signX = x1 < x2 ? 1 : -1;
+	let signY = y1 < y2 ? 1 : -1;
+	
+	let error = deltaX - deltaY;
+	
+	while(x1 != x2 || y1 != y2) {
+		if(grid[x1][y1].wall == false){
+			plot(x1,y1);
+		}else{
+			plot(x1,y1);
+			return "wandering";
+		}	
+		let error2 = error * 2;
+		
+		if(error2 > -deltaY) 
+		{
+			error -= deltaY;
+			x1 += signX;
+		}
+		if(error2 < deltaX) 
+		{
+			error += deltaX;
+			y1 += signY;
+		}
+	}
+	return "hunting";
 }
 function clamp(value, min, max){
     if(value < min) return min;
