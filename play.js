@@ -16,10 +16,10 @@ let context = board;
 
 const NUM_COLS=100, NUM_ROWS=90;
 //Зомби
-const GHOST_MOVEMENT_TIME=1000;
+const GHOST_MOVEMENT_TIME=320;
 const RUNNER_MOVEMENT_TIME=200;
 const NUM_TREES = 10;
-const NUM_ZOMBIE = 4;
+const NUM_ZOMBIE = 10;
 let zombie_stats = [];
 let ghostRow, ghostCol = new Array (NUM_ZOMBIE);
 
@@ -44,7 +44,10 @@ let handgun_mag = document.getElementById('handgun_mag');
 let crowbar = document.getElementById('crowbar');
 
 // Переменные персонажа
-let myCol = 11, myRow = 48;
+let myCol = 20, myRow = 83;
+//let myCol = 11, myRow = 48;
+//let myCol = 61, myRow = 21;
+//let myCol = 56, myRow = 76;
 let lst_mvnt_drct;
 let hero_sprites = [];
 hero_sprites[0]=hero;
@@ -125,7 +128,7 @@ function Spot(i,j){
 }
 
 function zombie_condition(i){
-	this.state = "wandering";
+	this.state = "hunting";
 	this.live = true;
 }
 
@@ -241,15 +244,66 @@ function initWalls(){
 	for (let i =22;i<49;i++){
 		grid[i][34].wall=true;
 	}
-	for (let i =22;i<49;i++){
-		grid[i][34].wall=true;
+	for (let i =34;i<45;i++){
+		grid[34][i].wall=true;
+	}
+
+	//5 floor 
+	for (let i =21;i<29;i++){
+		grid[55][i].wall=true;
+	}
+	for (let i =55;i<65;i++){
+		grid[i][27].wall=true;
+	}
+	for (let i =21;i<28;i++){
+		grid[65][i].wall=true;
+	}
+	for (let i =66;i<86;i++){
+		grid[i][21].wall=true;
+	}
+	for (let i =17;i<21;i++){
+		grid[84][i].wall=true;
+	}
+	for (let i =14;i<87;i++){
+		grid[i][15].wall=true;
+	}
+	grid[17][15].wall=false;
+	for (let i =16;i<22;i++){
+		grid[14][i].wall=true;
+	}
+	for (let i =14;i<55;i++){
+		grid[i][21].wall=true;
+	}
+	grid[84][16].wall=true;
+	//комнатка с лестницей
+	for (let i =11;i<15;i++){
+		grid[14][i].wall=true;
+	}
+	for (let i =15;i<22;i++){
+		grid[i][10].wall=true;
+	}
+	for (let i =10;i<15;i++){
+		grid[21][i].wall=true;
+	}
+	//roof
+	for (let i =53;i<95;i++){
+		grid[i][61].wall=true;
+	}
+	for (let i =61;i<81;i++){
+		grid[94][i].wall=true;
+	}
+	for (let i =52;i<95;i++){
+		grid[i][80].wall=true;
+	}
+	for (let i =61;i<81;i++){
+		grid[53][i].wall=true;
 	}
 }
 
 function init(){
 	//Позиции зомби
-	ghostCol = [0,0,NUM_COLS-1,NUM_COLS-1]
-	ghostRow = [0,NUM_ROWS-1,0,NUM_ROWS-1]
+	ghostCol = [0,12,13,14,23,25,25,28,30,30,]
+	ghostRow = [0,86,86,86,85,84,86,85,83,81]
 	// Сетка 
 	for (let i =0;i<NUM_COLS;i++){
 		grid[i]=new Array(NUM_ROWS);
@@ -303,6 +357,8 @@ function update(t){
 		for (let i=0;i<NUM_ZOMBIE;i++){
 			oldghostCol[i] = ghostCol[i];
 			oldghostRow[i] = ghostRow[i];
+
+			grid[ghostCol[i]][ghostRow[i]].wall=true;
 			if (zombie_stats[i].state == "hunting") {
 				let dCol = myCol-ghostCol[i];
 				let dRow = myRow-ghostRow[i];
@@ -314,6 +370,7 @@ function update(t){
 				} else {
 					if (dRow!=0) ghostRow[i] +=dRow/Math.abs(dRow);
 				}
+				grid[oldghostCol[i]][oldghostRow[i]].wall=false;
 				if (checkWall(ghostCol[i],ghostRow[i],oldghostCol[i],oldghostRow[i])==true) {
 					ghostCol[i]=oldghostCol[i];
 					ghostRow[i]=oldghostRow[i];
@@ -347,8 +404,11 @@ function update(t){
 			if (zombie_stats[i].state == "dead") {
 				context.drawImage(tree, ghostCol[i]*32, ghostRow[i]*32);
 			}
-			if (oldghostCol[i]==ghostCol[i] && oldghostRow[i]==ghostRow[i] && zombie_stats[i].state != "dead"){
-				zombie_stats[i].state = "wandering"
+			//if (oldghostCol[i]==ghostCol[i] && oldghostRow[i]==ghostRow[i] && zombie_stats[i].state != "dead"){
+			//	zombie_stats[i].state = "wandering"
+			//}
+			if (zombie_stats[i].state == "standing"){
+				
 			}
 		}
 
@@ -415,6 +475,9 @@ function draw(){
 	if ( crowbar_picked == false) {
 		context.drawImage(crowbar, crowbarCol*32, crowbarRow*32);	
 	}
+	if ( handgun_picked == false) {
+		context.drawImage(handgun, handgunCol*32, handgunRow*32);	
+	}
 	if ( handgun_mag_picked == false) {
 		context.drawImage(handgun_mag, handgun_magCol*32, handgun_magRow*32);	
 	}
@@ -423,17 +486,15 @@ function draw(){
 		context.drawImage(keys, keysCol*32, keysRow*32);	
 	}
 
-	if ( handgun_picked == false) {
-		context.drawImage(handgun, handgunCol*32, handgunRow*32);
+	if ( handgun_picked == false && crowbar_picked == false) {
+		
 		mvnt_drct(lst_mvnt_drct,myCol,myRow,0);
 	}
-	if ( crowbar_picked == true) {
-		mvnt_drct(lst_mvnt_drct,myCol,myRow,1);	
-	}
-	if ( handgun_picked == true)
+
+	if ( weapon == "handgun")
 		mvnt_drct(lst_mvnt_drct,myCol,myRow,1);	
 
-	if ( crowbar_picked == true)
+	if ( weapon == "crowbar")
 		mvnt_drct(lst_mvnt_drct,myCol,myRow,3);	
 
 
@@ -471,6 +532,20 @@ function moveOnceKey(event){
 	let oldCol=myCol;
 
 	switch (event.code){
+		case 'KeyQ':
+		    if (weapon=="handgun" && crowbar_picked==true){
+		    	console.log("смена на лом")
+		    	weapon ="crowbar";
+		    	console.log(weapon);
+		    	break;
+		    }
+		    if (weapon=="crowbar" && handgun_picked==true){
+		    	console.log("смена на пистолет")
+		    	weapon ="handgun";
+		    	console.log(weapon);
+		    	break;
+		    }
+		    break;
 		case 'KeyS':		
 			++myRow;
 			lst_mvnt_drct = "down";
@@ -516,16 +591,19 @@ function moveOnceKey(event){
 				console.log("door_opened !");
 				fuse_door_opened = true;
 			}
+			if ((myCol==door_canteenCol || myCol==door_canteenCol1) && myRow==door_canteenRow &&  door_canteen_opened==false){
+				grid[door_canteenCol][45].wall = false;
+				grid[door_canteenCol1][45].wall = false;
+				console.log("door_opened !");
+				door_canteen_opened = true;
+			}
 			if (keys_picked == true && myCol==door_switchCol && myRow==door_switchRow){
 				grid[myCol][myRow-1].wall = false;
 			}
 			if (switchboard == true && myCol==elevatorCol && myRow==elevatorRow){
 				myCol=56; myRow=23;
 			}
-			if (crowbar_picked == true && myCol==elevatorCol && myRow==elevatorRow){
-				dead = true;
-				alert("THE END!")
-			}	
+	
 
 			break;
 	}
@@ -546,14 +624,15 @@ function moveOnceKey(event){
 		myCol=oldCol;
 		myRow=oldRow;
 	}
-	if (myRow==handgunRow && myCol==handgunCol){
+	if (myRow==handgunRow && myCol==handgunCol && handgun_picked==false){
 		weapon = "handgun";
 		handgun_picked = true;
-		if (weapon == "crowbar") {
-			crowbar_picked = false;
-			crowbarCol = myCol;
-			crowbarRow = myRow;
-		}
+	
+	}
+	if (myRow==crowbarRow && myCol==crowbarCol && crowbar_picked==false){
+		crowbar_picked = true;
+		weapon = "crowbar";
+	
 	}
 	if (myRow==fuse1Row && myCol==fuse1Col){
 		fuse1_picked = true;
@@ -565,17 +644,9 @@ function moveOnceKey(event){
 	if (myRow==keysRow && myCol==keysCol){
 		keys_picked = true;	
 	}
-	if (myRow==crowbarRow && myCol==crowbarCol){
-		crowbar_picked = true;
-		weapon = "crowbar";
-		if (weapon == "handgun") {
-			handgun_picked = false;
-			handgunCol = myCol;
-			handgunRow = myRow;
-		}
-	}
 
-	if (myRow==handgun_magRow && myCol==handgun_magCol){
+
+	if (myRow==handgun_magRow && myCol==handgun_magCol && andgun_mag_picked==false){
 		handgun_mag_picked = true;
 		ammo +=8;
 	}
