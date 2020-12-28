@@ -23,6 +23,7 @@ let lines = [];
 // Спрайты
 let loc1 = document.getElementById('loc1');
 let gameover = document.getElementById('gameover');
+let win = document.getElementById('win');
 
 let fuse = document.getElementById('fuse');
 let keys = document.getElementById('keys');
@@ -62,7 +63,7 @@ hero_sprites[4]=heroFiring;
 //Оружие
 let handgun_picked = false;
 let weapon = "";
-let ammo = 10;
+let ammo = 20;
 let handgunCol=20;
 let handgunRow=57;
 
@@ -286,6 +287,16 @@ function initWalls(){
 		grid[i][21].wall=true;
 	}
 	grid[84][16].wall=true;
+	//комната 5 этажа
+	for (let i =5;i<15;i++){
+		grid[70][i].wall=true;
+	}
+	for (let i =70;i<84;i++){
+		grid[i][5].wall=true;
+	}
+	for (let i =5;i<15;i++){
+		grid[84][i].wall=true;
+	}
 	//комнатка с лестницей
 	for (let i =11;i<15;i++){
 		grid[14][i].wall=true;
@@ -595,6 +606,13 @@ function draw(){
 		myRow = 8;
 		return draw(),context.drawImage(gameover, 4*4, 1*4);
 	}	
+
+	if (zombie_stats[0].state == "dead" && myCol !=6){
+		console.log('Win');
+		myCol = 6;
+		myRow = 8;
+		return draw(),context.drawImage(win, 3*3, 1*3);
+	}
 
 
 }
