@@ -6,186 +6,97 @@ function removeFromArray(arr,elt) {
 	}
 }
 
+function heuristic(pos0, pos1) {
+    
+    var d1 = Math.abs (pos1.i - pos0.i);
+    var d2 = Math.abs (pos1.j - pos0.j);
+    return d1 + d2;
+  }
+
+function Spot(i,j){
+	this.i=i;
+	this.j=j;
+
+	this.f=0;
+	this.g=0;
+	this.h=0;
+	this.previos = undefined;
+	this.neighbors=[];
+
+	this.wall = false;
+/*	if (Math.random() < 0.25){
+		console.log("ЕСТЬ СТЕНА!!!!!!!!");
+		this.wall = true;
+	}*/
+	this.addNeighbors = function(grid){
+		let i = this.i;
+		let j = this.j;
+		if (i<NUM_COLS - 1){
+			this.neighbors.push(grid[i+1][j])
+		}
+		if (i>0){
+			this.neighbors.push(grid[i-1][j])
+		}
+		if (j<NUM_ROWS - 1){
+			this.neighbors.push(grid[i][j+1])
+		}
+		if (j>0){
+			this.neighbors.push(grid[i][j-1])
+		}	
+	}
+}
 
 // холст для рисования - игровое поле
 let board = document.getElementById('cnv').getContext('2d');
+let context = board
 
-let context = board;
-var canvas = document.getElementById('walls');
-var walls = canvas.getContext('2d');
-
-
-const NUM_COLS=100, NUM_ROWS=90;
-//Зомби
-const GHOST_MOVEMENT_TIME=1000;
+const NUM_COLS=20, NUM_ROWS=20;
+const GHOST_MOVEMENT_TIME=350;
 const NUM_TREES = 10;
 const NUM_ZOMBIE = 4;
-let zombie_stats = [];
-let ghostRow, ghostCol = new Array (NUM_ZOMBIE);
 
 
-// Спрайты
+let grid = new Array(NUM_COLS);
+
+
+let start = [];
+let end;
+let w, h;
+
+//let path =[];
+
+// фоновая клетка 32×32 - трава
 let bg = document.getElementById('grass');
-let loc1 = document.getElementById('loc1');
 
-
-let fuse = document.getElementById('fuse');
-let keys = document.getElementById('keys');
+// персонаж, спрайт 32×32 – привидение из пакмана
+let sprites = document.getElementById('sprites');
 
 let hero = document.getElementById('hero');
-let heroWithGun = document.getElementById('heroWithGun');
-let heroWithCrowbar = document.getElementById('heroWithCrowbar');
-
 let zombie = document.getElementById('zombie');
-let zombie_corpse = document.getElementById('zombie_corpse');
+
 let tree = document.getElementById('tree');
 
-let handgun = document.getElementById('handgun');
-let handgun_mag = document.getElementById('handgun_mag');
-let crowbar = document.getElementById('crowbar');
+// координаты персонажа, столбец и строка, считая с нуля
+//let myCol = Math.round(NUM_COLS/2), myRow = Math.round(NUM_ROWS/2);
+let myCol = 10, myRow = 10;
 
-// Переменные персонажа
-let myCol = 20, myRow = 83;
-let lst_mvnt_drct;
-let hero_sprites = [];
-hero_sprites[0]=hero;
-hero_sprites[1]=heroWithGun;
-hero_sprites[2]=zombie;
-hero_sprites[3]=heroWithCrowbar;
-
-//Оружие
-let handgun_picked = false;
-let weapon = "";
-let ammo = 2;
-let handgunCol=20;
-let handgunRow=57;
-//Патроны 
-let handgun_mag_picked= false;
-let handgun_magCol= 6;
-let handgun_magRow= 71;
-
-//Игровые вещи и скрипт локации
-let fuse1_picked = false;
-let fuse2_picked = false;
-let fuse1Col = 36;
-let fuse1Row= 52;
-let fuse2Col = 39;
-let fuse2Row= 38;
-
-let crowbar_picked = false;
-let crowbarCol = 14;
-let crowbarRow = 43;
-
-let switchboard =false;
-let switchboardCol =13;
-let switchboardCol1 =12;
-let switchboardRow =41;
-
-let keys_picked = false;
-let keysCol = 11;
-let keysRow = 59;
-
-let elevatorCol = 17;
-let elevatorRow = 52;
-let elevatorRow1 = 53;
-let elevatorRow2 = 55;
-let elevatorRow3 = 56;
-//doors 
-let door_canteenCol =27;
-let door_canteenCol1 =28;
-let door_canteenRow =46;
-
-let door_switchCol =0;
-let door_switchRow =13;
 // абзац с сообщением 
 let msg = document.getElementById('msg');
 
+// после загрузки картинок рисуем начальное состояние поля
+let ghostRow, ghostCol,treeCol = new Array(4),treeRow = new Array(4);
 
-let treeRow = new Array(NUM_TREES);
-let treeCol = new Array(NUM_TREES);
-
-
-//Cетка и канвас
-let grid = new Array(NUM_COLS);
-let canvaswidth = 352;
-let canvasheight = 352;
 let frmX=0, frmY=0;
 
-function Spot(i,j){
-	//Свойства клеток
-	this.col = i;
-	this.row = j;
-	this.wall = false;
-	this.item = "";
-}
 
-function zombie_condition(i){
-	this.state = "wandering";
-	this.live = true;
-}
 
-function initWalls2(){
-for (let i =0;i<NUM_COLS;i++){
-		for (let j =0;j<NUM_ROWS;j++){
-			let pixel = walls.getImageData(i*32, j*32, 1, 1);
-			let data = pixel.data;
-			console.log( data[0] + ', ' + data[1] +
-             ', ' + data[2] + ', ' + data[3]);
-			//if (color){
-			//	grid[i][j].wall = true;
-			//}
-		}
-	}
-
-}
-
-function initWalls(){
-	//do vhoda
-	for (let i =14;i<29;i++){
-		grid[i][72].wall=true;
-	}
-	for (let i =73;i<81;i++){
-		grid[29][i].wall=true;
-	}
-	for (let i =73;i<81;i++){
-		grid[13][i].wall=true;
-	}
-	//1 floor
-	for (let i =8;i<69;i++){
-		grid[i][68].wall=true;
-	}
-	for (let i =6;i>0;i--){
-		grid[i][68].wall=true;
-	}
-
-	for (let i =67;i>57;i--){
-		grid[1][i].wall=true;
-	}
-	for (let i =1;i<11;i++){
-		grid[i][59].wall=true;
-	}
-
-	grid[10][60].wall=true;
-	
-	for (let i =10;i<17;i++){
-		grid[i][58].wall=true;
-	}
-	for (let i =51;i<63;i++){
-		grid[16][i].wall=true;
-	}
-	for (let i =10;i<16;i++){
-		grid[i][62].wall=true;
-	}
-	for (let i =8;i<16;i++){
-		grid[i][51].wall=true;
-	}
-
-}
+let canvaswidth = 352;
+let canvasheight = 352;
 
 function init(){
-	//Позиции зомби
-	ghostCol = [0,0,NUM_COLS-1,NUM_COLS-1]
-	ghostRow = [0,NUM_ROWS-1,0,NUM_ROWS-1]
+
+	ghostCol = [14,0,NUM_COLS-1,NUM_COLS-1]
+	ghostRow = [14,NUM_ROWS-1,0,NUM_ROWS-1]
 	// Сетка 
 	for (let i =0;i<NUM_COLS;i++){
 		grid[i]=new Array(NUM_ROWS);
@@ -198,16 +109,29 @@ function init(){
 		}
 	}
 
-	for (let i =0;i<NUM_ZOMBIE;i++){
-		zombie_stats[i]= new zombie_condition(i);
+
+	for (let i =0;i<NUM_COLS;i++){
+		for (let j =0;j<NUM_ROWS;j++){
+			grid[i][j].addNeighbors(grid);
+		}
 	}
-	
+	/*start = grid[0][0];
+	end = grid[NUM_COLS-1][NUM_ROWS-1];
+	start.wall =false;
+	end.wall=false;
+	openSet.push(start);
+	*/
 
 	
-	initWalls2();
+
+	for (let i=0; i <NUM_TREES; i++){
+		do {
+			treeCol[i] = Math.floor(Math.random()*NUM_COLS);
+			treeRow[i] = Math.floor(Math.random()*NUM_ROWS);
+		}while ((treeCol[i]==0 || treeCol[i]==NUM_COLS) && (treeRow[i]==0 || treeRow[i]==NUM_ROWS))
+	}
 	draw();
 	animReq=window.requestAnimationFrame(update);
-
 }
 
 let tLastMove,tLastFrm;
@@ -217,74 +141,38 @@ let oldghostRow = [];
 let ghst_last_mvnt_drct =[];
 let dead = false;
 function update(t){
-	console.log(NUM_ZOMBIE);
-	for (let k=0;k<NUM_ZOMBIE;k++){ 
-		if (zombie_stats[k].live=false) {
-
-			NUM_ZOMBIE.splice(k, 1);
-			ghostCol.splice(k, 1);
-			removeFromArray(ghostRow,k);
-			removeFromArray(oldghostCol,k);
-			removeFromArray(oldghostRow,k);
-			console.log(NUM_ZOMBIE);
-			console.log(z);
-		}
-	}
-
-
+	
 	if(!tLastMove) tLastMove = t;
 	
 	if(t - tLastMove>=GHOST_MOVEMENT_TIME){
+		for (let k=0;k<1;k++){
+			oldghostCol[k] = ghostCol[k];
+			oldghostRow[k] = ghostRow[k];
+			start[k] = grid[ghostCol[k]][ghostRow[k]]; //как задать точки старта для разных зомби ?
+			end = grid[myCol][myRow];
+			
 
-		for (let i=0;i<NUM_ZOMBIE;i++){
-			oldghostCol[i] = ghostCol[i];
-			oldghostRow[i] = ghostRow[i];
-			if (zombie_stats[i].state == "hunting") {
-				let dCol = myCol-ghostCol[i];
-				let dRow = myRow-ghostRow[i];
+			let next_move =[];
+			let tempPath = findPath(start[k],end);
+			next_move[k] = tempPath;
+			console.log("next_move",k,"=",next_move[k]);
+			console.log("next_move",k,"=",next_move[k][tempPath.length-2]);
+			
+			console.log(tempPath.length);
 
-				
 
-				if (Math.abs(dCol)>Math.abs(dRow)){
-					if (dCol!=0) ghostCol[i] +=dCol/Math.abs(dCol);
-				} else {
-					if (dRow!=0) ghostRow[i] +=dRow/Math.abs(dRow);
-				}
-				if (checkWall(ghostCol[i],ghostRow[i],oldghostCol[i],oldghostRow[i])==true) {
-					ghostCol[i]=oldghostCol[i];
-					ghostRow[i]=oldghostRow[i];
-				}
-				if (ghostCol[i]==myCol && ghostRow[i]==myRow){
-					dead = true;
-				}
+			
 
-				for (let i=0;i<NUM_ZOMBIE;i++){
-					if (oldghostCol[i] - ghostCol[i]>=0.9) {ghst_last_mvnt_drct[i]="left"; }
-					if (oldghostCol[i] - ghostCol[i]<=-0.9) {ghst_last_mvnt_drct[i]="right"; }
-					if (oldghostRow[i] - ghostRow[i]>=0.9) {ghst_last_mvnt_drct[i]="up"; }
-					if (oldghostRow[i] - ghostRow[i]<=-0.9) {ghst_last_mvnt_drct[i]="down"; }
-				}
+
+			if (ghostCol[k]==myCol && ghostRow[k]==myRow){
+				dead = true;
 			}
-			if (zombie_stats[i].state == "wandering") {
-				let random_number = Math.random();
-				if (random_number<0.1) {ghostRow[i]++;ghst_last_mvnt_drct[i]="down";}
-				if (random_number>0.1 && random_number<0.2) {ghostRow[i]--;ghst_last_mvnt_drct[i]="up";}
-				if (random_number>0.3 && random_number<0.4) {ghostCol[i]++;ghst_last_mvnt_drct[i]="right";}
-				if (random_number>0.4 && random_number<0.5) {ghostCol[i]--;ghst_last_mvnt_drct[i]="left";}
-				if (checkWall(ghostCol[i],ghostRow[i],oldghostCol[i],oldghostRow[i])==true) {
-					ghostCol[i]=oldghostCol[i];
-					ghostRow[i]=oldghostRow[i];
-				}
-				if (ghostCol[i]==myCol && ghostRow[i]==myRow){
-					dead = true;
-				}
 
-			}
-			if (zombie_stats[i].state == "dead") {
-				context.drawImage(tree, ghostCol[i]*32, ghostRow[i]*32);
-			}
-			if (oldghostCol[i]==ghostCol[i] && oldghostRow[i]==ghostRow[i] && zombie_stats[i].state != "dead"){
-				zombie_stats[i].state = "wandering"
+			for (let i=0;i<4;i++){
+			if (oldghostCol[i] - ghostCol[i]>=0.9) {ghst_last_mvnt_drct[i]="left"; }
+			if (oldghostCol[i] - ghostCol[i]<=-0.9) {ghst_last_mvnt_drct[i]="right"; }
+			if (oldghostRow[i] - ghostRow[i]>=0.9) {ghst_last_mvnt_drct[i]="up"; }
+			if (oldghostRow[i] - ghostRow[i]<=-0.9) {ghst_last_mvnt_drct[i]="down"; }
 			}
 		}
 
@@ -293,13 +181,98 @@ function update(t){
 	
 	draw();
 	msg.value=(t);
-
-	
-
 	if (!dead) animReq=window.requestAnimationFrame(update)
 
-
 }
+function findPath(start,goal){	
+	console.log("!");
+	let path=[];
+	let openSet =[];
+	let closedSet=[];
+	openSet.push(start);
+	while (openSet.length > 0) {
+		if (openSet.length >0){
+		//работает дальше 
+		let winner = 0; //winner = lowest index
+		for (let i = 0; i < openSet.length; i++) {
+			if(openSet[i].f<openSet[winner].f){
+				winner=i;
+			}
+		}
+
+		let current = openSet[winner];
+		
+
+		if (current === goal) {
+			//Находит траекторию
+			
+
+			let temp = current;
+			path.push(temp);
+			while (temp.previos){
+				path.push(temp.previos)
+				temp = temp.previos;
+			}
+		}
+		removeFromArray(openSet,current)//openSet.remove(current)
+		closedSet.push(current);
+		let neighbors = current.neighbors;
+		for (let i = 0; i < neighbors.length;i++){
+			let neighbor = neighbors[i];
+			if (!closedSet.includes(neighbor) && !neighbor.wall){
+					
+				let tempG=current.g+1;
+				let newpath = false;
+
+				if(openSet.includes(neighbor)){
+
+					if(tempG < neighbor.g) {
+						neighbor.g = tempG;
+						newpath = true;
+					}
+				} else {
+					neighbor.g = tempG;
+					newpath = true;
+					openSet.push(neighbor);
+					
+				}
+				if (newpath){
+					neighbor.h = heuristic(neighbor,goal);
+					neighbor.f = neighbor.g + neighbor.h;
+					neighbor.previos = current;
+				}
+			}		
+		}
+
+	/*for (let i=0; i<closedSet.length;i++){
+		context.drawImage(red,0*32,0*32,32,32,closedSet[i]["i"]*32,closedSet[i]["j"]*32,32,32);
+	}
+
+	for (let i=0; i<openSet.length;i++){
+		context.drawImage(green,0*32,0*32,32,32,openSet[i]["i"]*32,openSet[i]["j"]*32,32,32);
+	}
+	
+	for (let i=0; i < path.length; i++){
+		context.drawImage(blue,0*32,0*32,32,32,path[i]["i"]*32,path[i]["j"]*32,32,32);
+	}	
+	*/
+
+	} else {
+		//нету решения
+		console.log("ТУПИК");
+		
+	}
+if (openSet.length == 0){
+			console.log("ТУПИК!!!");
+			break;
+		}
+
+
+
+	}
+	return path;
+}
+
 function clamp(value, min, max){
     if(value < min) return min;
     else if(value > max) return max;
@@ -307,7 +280,7 @@ function clamp(value, min, max){
 }
 
 function draw(){
-
+	
 
 
 	//start of viewport
@@ -315,8 +288,8 @@ function draw(){
     context.clearRect(0, 0, canvaswidth, canvasheight);//clear the viewport AFTER the matrix is reset
 
     //Clamp the camera position to the world bounds while centering the camera around the player                                             
-    var camX = clamp(-myCol*32 + canvaswidth/2, -10000, 10000 - canvaswidth);
-    var camY = clamp(-myRow*32 + canvasheight/2, -10000, 10000 - canvasheight);
+    var camX = clamp(-myCol*32 + canvaswidth/2, -1000, 1000 - canvaswidth);
+    var camY = clamp(-myRow*32 + canvasheight/2, -1000, 1000 - canvasheight);
 
     context.translate( camX, camY );
     //end of viewport
@@ -327,52 +300,11 @@ function draw(){
 			context.drawImage(bg, col*32, row*32);
 		}
 	}
-	context.drawImage(loc1, 0, 0);
+	mvnt_drct(lst_mvnt_drct,myCol,myRow);
 	
 	for (let i=0;i<NUM_TREES; i++)context.drawImage(tree, treeCol[i]*32, treeRow[i]*32);
-	for (let i=0;i<NUM_ZOMBIE; i++) {
-		if (zombie_stats[i].state!="dead"){
-
-			mvnt_drct(ghst_last_mvnt_drct[i],ghostCol[i],ghostRow[i],2);
-		}
-		if (zombie_stats[i].state=="dead"){
-
-			context.drawImage(zombie_corpse, ghostCol[i]*32, ghostRow[i]*32);
-		}
-
-	}
-	
-	if ( fuse1_picked == false) {
-		context.drawImage(fuse, fuse1Col*32, fuse1Row*32);	
-	}
-	if ( fuse2_picked == false) {
-		context.drawImage(fuse, fuse2Col*32, fuse2Row*32);	
-	}
-	if ( crowbar_picked == false) {
-		context.drawImage(crowbar, crowbarCol*32, crowbarRow*32);	
-	}
-	if ( handgun_mag_picked == false) {
-		context.drawImage(handgun_mag, handgun_magCol*32, handgun_magRow*32);	
-	}
-
-	if ( keys_picked == false) {
-		context.drawImage(keys, keysCol*32, keysRow*32);	
-	}
-
-	if ( handgun_picked == false) {
-		context.drawImage(handgun, handgunCol*32, handgunRow*32);
-		mvnt_drct(lst_mvnt_drct,myCol,myRow,0);
-	}
-	if ( crowbar_picked == true) {
-		mvnt_drct(lst_mvnt_drct,myCol,myRow,1);	
-	}
-	if ( handgun_picked == true)
-		mvnt_drct(lst_mvnt_drct,myCol,myRow,1);	
-
-	if ( crowbar_picked == true)
-		mvnt_drct(lst_mvnt_drct,myCol,myRow,3);	
-
-
+	for (let i=0;i<4; i++)
+	mvnt_drct(ghst_last_mvnt_drct[i],ghostCol[i],ghostRow[i]);	
  /*context.drawImage(tree, 2*32, 2*32);
  context.drawImage(tree, 1*32, 2*32);
  context.drawImage(tree, 2*32, 1*32);
@@ -382,247 +314,59 @@ function draw(){
 
 }
 
-function mvnt_drct(lst_mvnt_drct,charCol,charRow,k) {
+function mvnt_drct(lst_mvnt_drct,charCol,charRow) {
 switch(lst_mvnt_drct){
 		case "":
-		case undefined:
+			context.drawImage(hero,0*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			break;
 		case "right":
-			context.drawImage(hero_sprites[k],0*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			context.drawImage(hero,0*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
 			break;
 		case "left":
-			context.drawImage(hero_sprites[k],1*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			context.drawImage(hero,1*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
 			break;
 		case "up":
-			context.drawImage(hero_sprites[k],3*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			context.drawImage(hero,3*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
 			break;
 		case "down":
-			context.drawImage(hero_sprites[k],2*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			context.drawImage(hero,2*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
 			break;
 	}	
 }
 
-
+let lst_mvnt_drct ="";
 function moveOnceKey(event){
 	let oldRow=myRow;
 	let oldCol=myCol;
 
 	switch (event.code){
-		case 'KeyS':		
+		case 'KeyS':
+		case 'ArrowDown':
 			++myRow;
 			lst_mvnt_drct = "down";
 			break;
-		case 'KeyW':		
+		case 'KeyW':
+		case 'ArrowUp':
 			--myRow;
 			lst_mvnt_drct = "up";
 			break;
-		case 'KeyD':		
+		case 'KeyD':
+		case 'ArrowRight':
 			++myCol;
 			lst_mvnt_drct = "right";
 			break;
-		case 'KeyA':	
+		case 'KeyA':
+		case 'ArrowLeft':
 			--myCol;
 			lst_mvnt_drct = "left";
 			break;
-		case 'ArrowDown':
-			fire("down");
-			lst_mvnt_drct = "down";
-			break;
-		case 'ArrowUp':
-			fire("up");
-			lst_mvnt_drct = "up";
-			break;
-		case 'ArrowRight':
-			fire("right");
-			lst_mvnt_drct = "right";
-			break;
-		case 'ArrowLeft':
-			fire("left");
-			lst_mvnt_drct = "left";
-			break;
-		case 'KeyF':
-			console.log("col=",myCol,"row=",myRow);
-			break;
-		case 'KeyE':
-			if (myCol==door_canteenCol && myRow==door_canteenRow){
-				grid[myCol][myRow-1].wall = false;
-			}		
-			if (keys_picked == true && myCol==door_switchCol && myRow==door_switchRow){
-				grid[myCol][myRow-1].wall = false;
-			}
-			if (switchboard == true && myCol==elevatorCol && myRow==elevatorRow){
-				myCol=56; myRow=23;
-			}
-			if (crowbar_picked == true && myCol==elevatorCol && myRow==elevatorRow){
-				dead = true;
-				alert("THE END!")
-			}	
-			break;
 	}
 	if (myCol<0 || myCol>NUM_COLS-1) myCol=oldCol; 
-	if (myRow<0 || myRow>NUM_ROWS-1) myRow=oldRow;
-	//Тп на внутрь кфена
-	if ((myCol==24 && myRow==74) || (myCol==23 && myRow==73) || (myCol==24 && myRow==73) || (myCol==23 && myRow==74)) {
-		myCol = 24;
-		myRow = 67;
-	}
-	//Тп на крышу
-	if (myCol==18 && myRow==13) {
-		myCol = 56;
-		myRow = 64;
-	}
-
-	if (checkWall(myCol,myRow,oldCol,oldRow)==true) {
-		myCol=oldCol;
-		myRow=oldRow;
-	}
-	if (myRow==handgunRow && myCol==handgunCol){
-		weapon = "handgun";
-		handgun_picked = true;
-		if (weapon == "crowbar") {
-			crowbar_picked = false;
-			crowbarCol = myCol;
-			crowbarRow = myRow;
-		}
-	}
-	if (myRow==fuse1Row && myCol==fuse1Col){
-		fuse1_picked = true;
-	}
-	if (myRow==fuse2Row && myCol==fuse2Col){
-		fuse2_picked = true;
-	}
-
-	if (myRow==keysRow && myCol==keysCol){
-		keys_picked = true;	
-	}
-	if (myRow==crowbarRow && myCol==crowbarCol){
-		crowbar_picked = true;
-		weapon = "crowbar";
-		if (weapon == "handgun") {
-			handgun_picked = false;
-			handgunCol = myCol;
-			handgunRow = myRow;
-		}
-	}
-
-	if (myRow==handgun_magRow && myCol==handgun_magCol){
-		handgun_mag_picked = true;
-		ammo +=8;
-	}
-
-	if (fuse1_picked == true && fuse2_picked == true && myCol == switchboardCol && myRow == switchboardRow) {
-		switchboard = true;	
-	}
-	
-}
-function checkWall(newCol,newRow,previosCol,previosRow){
-	if (newCol<0 || newCol>NUM_COLS-1) return true;
-	if (newRow<0 || newRow>NUM_ROWS-1) return true;
-		if (grid[newCol][newRow].wall){
-			return true;
-		}
-	return false;
-}
-
-function fire(direction){
-	if (weapon=="handgun" && ammo > 0) {
-		switch(direction){
-			case 'down':
-			for (let i =myRow;i<NUM_ROWS;i++){
-				if (grid[myCol][i].wall) {
-					break;
-				}
-				for (let j =0;j<NUM_ZOMBIE;j++){
-					if (ghostRow[j]==i && ghostCol[j]==myCol){
-						zombie_stats[j].state="dead";								
-					}
-				}
-			}
-			ammo--;
-			break;
-			case 'up':
-			for (let i = myRow;i>=0;i--){
-				if (grid[myCol][i].wall) {
-
-					break;
-				}
-				for (let j =0;j<NUM_ZOMBIE;j++){
-					if (ghostRow[j]==i && ghostCol[j]==myCol){
-
-						zombie_stats[j].state="dead";								
-					}
-				}
-			}
-			ammo--;
-			break;
-			case 'right':
-			for (let i = myCol;i < NUM_COLS;i++){
-				if (grid[i][myRow].wall) {
-
-					break;
-				}
-				for (let j =0;j<NUM_ZOMBIE;j++){
-					if (ghostCol[j]==i && ghostRow[j]==myRow){
-
-						zombie_stats[j].state="dead";								
-					}
-				}
-			}
-			ammo--;
-			break;
-			case 'left':
-			for (let i = myCol;i >= 0;i--){
-				if (grid[i][myRow].wall) {
-
-					break;
-				}
-				for (let j =0;j<NUM_ZOMBIE;j++){
-					if (ghostCol[j]==i && ghostRow[j]==myRow){
-
-						zombie_stats[j].state="dead";								
-					}
-				}
-			}
-			ammo--;
-			break;
-		}
-	}
-	if (weapon=="crowbar") {
-		switch(direction){
-			case 'down':
-				for (let j =0;j<NUM_ZOMBIE;j++){
-					if (ghostRow[j]==myRow+1 && ghostCol[j]==myCol){
-						zombie_stats[j].state="dead";								
-					}
-				}
-			
-			break;
-			case 'up':
-				for (let j =0;j<NUM_ZOMBIE;j++){
-					if (ghostRow[j]==myRow-1 && ghostCol[j]==myCol){
-						zombie_stats[j].state="dead";								
-					}
-				}
-			
-			break;
-			case 'right':
-
-				for (let j =0;j<NUM_ZOMBIE;j++){
-					if (ghostCol[j]==myCol+1 && ghostRow[j]==myRow){
-						zombie_stats[j].state="dead";								
-					}
-				}
-			
-			break;
-			case 'left':
-
-				for (let j =0;j<NUM_ZOMBIE;j++){
-					if (ghostCol[j]==myCol-1 && ghostRow[j]==myRow){
-
-						zombie_stats[j].state="dead";								
-					}
-				}
-
-			break;
+	if (myRow<0 || myCol>NUM_ROWS-1) myRow=oldRow;
+	for (let i=0; i<NUM_TREES;i++){
+		if (myCol==treeCol[i] && myRow==treeRow[i]){
+			myRow=oldRow
+			myCol=oldCol
 		}
 	}
 }
@@ -636,4 +380,3 @@ function fire(direction){
 
 window.onload = init;
 window.onkeyup = moveOnceKey;
-document.onmouseup = fire;
