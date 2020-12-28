@@ -104,6 +104,9 @@ let door_canteenCol =27;
 let door_canteenCol1 =28;
 let door_canteenRow =45;
 
+let door_beginCol =23;
+let door_beginRow =72; 
+
 let door_5floor_opened = false;
 let door_5floorCol =72;
 let door_5floorCol1 =73;
@@ -531,6 +534,9 @@ function draw(){
 		}
 
 	}
+	context.drawImage(door, (door_beginCol-6)*32, door_beginRow*32);
+	context.drawImage(door, (door_beginCol-3)*32, door_beginRow*32);
+	context.drawImage(door, door_beginCol*32, door_beginRow*32);
 	if ( door_5floor_opened == false){
 		context.drawImage(door, door_5floorCol*32, door_5floorRow*32);
 	}
@@ -583,8 +589,12 @@ function draw(){
 	
 	}
 
-	//if (dead)
-	//	context.drawImage(gameover, 0, 0);
+	if (dead && myCol !=6){
+		console.log('Dead');
+		myCol = 6;
+		myRow = 8;
+		return draw(),context.drawImage(gameover, 4*4, 1*4);
+	}	
 
 
 }
