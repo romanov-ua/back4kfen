@@ -36,6 +36,7 @@ let hero_corpse = document.getElementById('hero_corpse');
 let boss = document.getElementById('boss');
 let boss_corpse = document.getElementById('boss_corpse');
 
+let runner = document.getElementById('runner');
 let zombie = document.getElementById('zombie');
 let zombie_corpse = document.getElementById('zombie_corpse');
 let tree = document.getElementById('tree');
@@ -309,8 +310,8 @@ let ghostRow, ghostCol = new Array (NUM_ZOMBIE);
 
 function init(){
 	//Позиции зомби
-	ghostCol = [76,12,13,14,23,25,25,28,30,30,]
-	ghostRow = [70,86,86,86,85,84,86,85,83,81]
+	ghostCol = [76,24,13,14,23,25,25,28,30,30,]
+	ghostRow = [70,18,86,86,85,84,86,85,83,81]
 	// Сетка 
 	for (let i =0;i<NUM_COLS;i++){
 		grid[i]=new Array(NUM_ROWS);
@@ -505,11 +506,19 @@ function draw(){
 				boss_mvnt_drct(ghst_last_mvnt_drct[i],ghostCol[i],ghostRow[i]);
 				continue;
 			}
+			if (i==1){
+				runner_mvnt_drct(ghst_last_mvnt_drct[i],ghostCol[i],ghostRow[i]);
+				continue;
+			}
 			mvnt_drct(ghst_last_mvnt_drct[i],ghostCol[i],ghostRow[i],2);
 		}
 		if (zombie_stats[i].state=="dead"){
 			if (i==0) {
 				context.drawImage(boss_corpse, ghostCol[i]*32, ghostRow[i]*32);
+				continue;
+			}
+			if (i==1){
+				context.drawImage(zombie_corpse,ghostCol[i]*32, ghostRow[i]*32);
 				continue;
 			}
 			context.drawImage(zombie_corpse, ghostCol[i]*32, ghostRow[i]*32);
@@ -582,6 +591,25 @@ switch(lst_mvnt_drct){
 		case "down":
 			context.drawImage(hero_sprites[k],2*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
 			break;
+	}	
+}
+
+function runner_mvnt_drct(lst_mvnt_drct,charCol,charRow,k) {
+	switch(lst_mvnt_drct){
+			case "":
+			case undefined:
+			case "right":
+				context.drawImage(runner,0*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+				break;
+			case "left":
+				context.drawImage(runner,1*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+				break;
+			case "up":
+				context.drawImage(runner,3*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+				break;
+			case "down":
+				context.drawImage(runner,2*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+				break;
 	}	
 }
 
