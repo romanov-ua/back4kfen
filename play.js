@@ -16,18 +16,13 @@ let context = board;
 
 const NUM_COLS=100, NUM_ROWS=90;
 //Зомби
-const GHOST_MOVEMENT_TIME=320;
-const RUNNER_MOVEMENT_TIME=200;
-const NUM_TREES = 10;
-const NUM_ZOMBIE = 10;
-let zombie_stats = [];
-let ghostRow, ghostCol = new Array (NUM_ZOMBIE);
+
 let lines = [];
 
 
 // Спрайты
-let bg = document.getElementById('grass');
 let loc1 = document.getElementById('loc1');
+let gameover = document.getElementById('gameover');
 
 let fuse = document.getElementById('fuse');
 let keys = document.getElementById('keys');
@@ -35,6 +30,11 @@ let keys = document.getElementById('keys');
 let hero = document.getElementById('hero');
 let heroWithGun = document.getElementById('heroWithGun');
 let heroWithCrowbar = document.getElementById('heroWithCrowbar');
+let heroFiring = document.getElementById('heroFiring');
+let hero_corpse = document.getElementById('hero_corpse');
+
+let boss = document.getElementById('boss');
+let boss_corpse = document.getElementById('boss_corpse');
 
 let zombie = document.getElementById('zombie');
 let zombie_corpse = document.getElementById('zombie_corpse');
@@ -45,23 +45,26 @@ let handgun_mag = document.getElementById('handgun_mag');
 let crowbar = document.getElementById('crowbar');
 
 // Переменные персонажа
-let myCol = 20, myRow = 83;
+//let myCol = 20, myRow = 83;
 //let myCol = 11, myRow = 48;
 //let myCol = 61, myRow = 21;
-//let myCol = 56, myRow = 76;
+let myCol = 56, myRow = 76;
 let lst_mvnt_drct;
 let hero_sprites = [];
 hero_sprites[0]=hero;
 hero_sprites[1]=heroWithGun;
 hero_sprites[2]=zombie;
 hero_sprites[3]=heroWithCrowbar;
+hero_sprites[4]=heroFiring;
 
 //Оружие
 let handgun_picked = false;
 let weapon = "";
-let ammo = 2;
+let ammo = 4;
 let handgunCol=20;
 let handgunRow=57;
+
+let firing_dir = "";
 //Патроны 
 let handgun_mag_picked= false;
 let handgun_magCol= 6;
@@ -109,9 +112,6 @@ let fuse_doorRow=46;
 // абзац с сообщением 
 let msg = document.getElementById('msg');
 
-
-let treeRow = new Array(NUM_TREES);
-let treeCol = new Array(NUM_TREES);
 
 
 //Cетка и канвас
@@ -300,11 +300,17 @@ function initWalls(){
 		grid[53][i].wall=true;
 	}
 }
+const GHOST_MOVEMENT_TIME=320;
+const RUNNER_MOVEMENT_TIME=200;
+
+const NUM_ZOMBIE = 10;
+let zombie_stats = [];
+let ghostRow, ghostCol = new Array (NUM_ZOMBIE);
 
 function init(){
 	//Позиции зомби
-	ghostCol = [0,12,13,14,23,25,25,28,30,30,]
-	ghostRow = [0,86,86,86,85,84,86,85,83,81]
+	ghostCol = [76,12,13,14,23,25,25,28,30,30,]
+	ghostRow = [70,86,86,86,85,84,86,85,83,81]
 	// Сетка 
 	for (let i =0;i<NUM_COLS;i++){
 		grid[i]=new Array(NUM_ROWS);
@@ -336,7 +342,7 @@ let oldghostRow = [];
 let ghst_last_mvnt_drct =[];
 let dead = false;
 function update(t){
-	console.log(NUM_ZOMBIE);
+
 	for (let k=0;k<NUM_ZOMBIE;k++){ 
 		if (zombie_stats[k].live=false) {
 
@@ -345,8 +351,7 @@ function update(t){
 			removeFromArray(ghostRow,k);
 			removeFromArray(oldghostCol,k);
 			removeFromArray(oldghostRow,k);
-			console.log(NUM_ZOMBIE);
-			console.log(z);
+	
 		}
 	}
 
@@ -415,6 +420,7 @@ function update(t){
 			console.log(zombie_stats[i].state);
 			
 			lines = [];
+			firing_dir="";
 		}
 
 		tLastMove = t;
@@ -486,21 +492,24 @@ function draw(){
     //end of viewport
     //context.scale(2, 2);
 
-	for (let col = 0; col < NUM_COLS; col++){	
-		for (let row = 0; row < NUM_ROWS; row++){
-			context.drawImage(bg, col*32, row*32);
-		}
-	}
+
 	context.drawImage(loc1, 0, 0);
+	if ( dead)
+		context.drawImage(hero_corpse, myCol*32, myRow*32);
 	
-	for (let i=0;i<NUM_TREES; i++)context.drawImage(tree, treeCol[i]*32, treeRow[i]*32);
 	for (let i=0;i<NUM_ZOMBIE; i++) {
 		if (zombie_stats[i].state!="dead"){
-
+			if (i==0) {
+				boss_mvnt_drct(ghst_last_mvnt_drct[i],ghostCol[i],ghostRow[i]);
+				continue;
+			}
 			mvnt_drct(ghst_last_mvnt_drct[i],ghostCol[i],ghostRow[i],2);
 		}
 		if (zombie_stats[i].state=="dead"){
-
+			if (i==0) {
+				context.drawImage(boss_corpse, ghostCol[i]*32, ghostRow[i]*32);
+				continue;
+			}
 			context.drawImage(zombie_corpse, ghostCol[i]*32, ghostRow[i]*32);
 		}
 
@@ -526,28 +535,74 @@ function draw(){
 		context.drawImage(keys, keysCol*32, keysRow*32);	
 	}
 
-	if ( handgun_picked == false && crowbar_picked == false) {
+	if ( handgun_picked == false && crowbar_picked == false && !dead) {
 		
 		mvnt_drct(lst_mvnt_drct,myCol,myRow,0);
 	}
 
-	if ( weapon == "handgun")
+	if ( weapon == "handgun" && !dead)
 		mvnt_drct(lst_mvnt_drct,myCol,myRow,1);	
 
-	if ( weapon == "crowbar")
+	if ( weapon == "crowbar" && !dead)
 		mvnt_drct(lst_mvnt_drct,myCol,myRow,3);	
+	if (firing_dir == "down" ){
+		context.drawImage(heroFiring,0*32,0*32,32,64, myCol*32, myRow*32-32,32,64);
+	
+	}
+	if (firing_dir == "right" ){
+		context.drawImage(heroFiring,107,0*32,40,64, myCol*32, myRow*32-32,32,64);
+	
+	}
+	if (firing_dir == "left" ){
+		context.drawImage(heroFiring,60,0*32,40,64, myCol*32-8, myRow*32-32,32,64);
+	
+	}
 
+	//if (dead)
+	//	context.drawImage(gameover, 0, 0);
 
- /*context.drawImage(tree, 2*32, 2*32);
- context.drawImage(tree, 1*32, 2*32);
- context.drawImage(tree, 2*32, 1*32);
-
- context.drawImage(tree, 2*32, 0*32);
- context.drawImage(tree, 0*32, 2*32);		*/
 
 }
 
 function mvnt_drct(lst_mvnt_drct,charCol,charRow,k) {
+switch(lst_mvnt_drct){
+		case "":
+		case undefined:
+		case "right":
+			context.drawImage(hero_sprites[k],0*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			break;
+		case "left":
+			context.drawImage(hero_sprites[k],1*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			break;
+		case "up":
+			context.drawImage(hero_sprites[k],3*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			break;
+		case "down":
+			context.drawImage(hero_sprites[k],2*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			break;
+	}	
+}
+
+function boss_mvnt_drct(lst_mvnt_drct,charCol,charRow,k) {
+switch(lst_mvnt_drct){
+		case "":
+		case undefined:
+		case "right":
+			context.drawImage(boss,0*64,0*32,64,96, charCol*32, charRow*32-32,64,96);
+			break;
+		case "left":
+			context.drawImage(boss,1*64,0*32,64,96, charCol*32, charRow*32-32,64,96);
+			break;
+		case "up":
+			context.drawImage(boss,3*64,0*32,64,96, charCol*32, charRow*32-32,64,96);
+			break;
+		case "down":
+			context.drawImage(boss,2*64,0*32,64,96, charCol*32, charRow*32-32,64,96);
+			break;
+	}	
+}
+
+function fire_mvnt_drct(lst_mvnt_drct,charCol,charRow,k) {
 switch(lst_mvnt_drct){
 		case "":
 		case undefined:
@@ -686,7 +741,7 @@ function moveOnceKey(event){
 	}
 
 
-	if (myRow==handgun_magRow && myCol==handgun_magCol && andgun_mag_picked==false){
+	if (myRow==handgun_magRow && myCol==handgun_magCol && handgun_mag_picked==false){
 		handgun_mag_picked = true;
 		ammo +=8;
 	}
@@ -719,6 +774,7 @@ function fire(direction){
 					}
 				}
 			}
+			firing_dir = "down";
 			ammo--;
 			break;
 			case 'up':
@@ -734,6 +790,7 @@ function fire(direction){
 					}
 				}
 			}
+
 			ammo--;
 			break;
 			case 'right':
@@ -749,6 +806,7 @@ function fire(direction){
 					}
 				}
 			}
+			firing_dir = "right";
 			ammo--;
 			break;
 			case 'left':
@@ -764,6 +822,7 @@ function fire(direction){
 					}
 				}
 			}
+			firing_dir = "left";
 			ammo--;
 			break;
 		}
