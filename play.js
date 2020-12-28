@@ -9,11 +9,15 @@ function removeFromArray(arr,elt) {
 
 // холст для рисования - игровое поле
 let board = document.getElementById('cnv').getContext('2d');
-let context = board
+
+let context = board;
+
+
 
 const NUM_COLS=100, NUM_ROWS=90;
 //Зомби
 const GHOST_MOVEMENT_TIME=1000;
+const RUNNER_MOVEMENT_TIME=200;
 const NUM_TREES = 10;
 const NUM_ZOMBIE = 4;
 let zombie_stats = [];
@@ -40,7 +44,7 @@ let handgun_mag = document.getElementById('handgun_mag');
 let crowbar = document.getElementById('crowbar');
 
 // Переменные персонажа
-let myCol = 14, myRow = 66;
+let myCol = 11, myRow = 48;
 let lst_mvnt_drct;
 let hero_sprites = [];
 hero_sprites[0]=hero;
@@ -52,41 +56,52 @@ hero_sprites[3]=heroWithCrowbar;
 let handgun_picked = false;
 let weapon = "";
 let ammo = 2;
-let handgunCol=3;
-let handgunRow=3;
+let handgunCol=20;
+let handgunRow=57;
 //Патроны 
 let handgun_mag_picked= false;
-let handgun_magCol= 0;
-let handgun_magRow= 9;
+let handgun_magCol= 6;
+let handgun_magRow= 71;
 
 //Игровые вещи и скрипт локации
 let fuse1_picked = false;
 let fuse2_picked = false;
-let fuse1Col = 4;
-let fuse1Row= 0;
-let fuse2Col = 7;
-let fuse2Row= 0;
+let fuse1Col = 36;
+let fuse1Row= 52;
+let fuse2Col = 39;
+let fuse2Row= 38;
 
 let crowbar_picked = false;
-let crowbarCol = 8;
-let crowbarRow = 8;
+let crowbarCol = 14;
+let crowbarRow = 43;
 
 let switchboard =false;
-let switchboardCol =9;
-let switchboardRow =0;
+let switchboardCol =13;
+let switchboardCol1 =12;
+let switchboardRow =41;
 
 let keys_picked = false;
-let keysCol = 7;
-let keysRow = 7;
+let keysCol = 11;
+let keysRow = 59;
 
-let elevatorCol = 13;
-let elevatorRow = 13;
+let elevatorCol = 17;
+let elevatorRow = 52;
+let elevatorRow1 = 53;
+let elevatorRow2 = 55;
+let elevatorRow3 = 56;
 //doors 
-let door_canteenCol =13;
-let door_canteenRow =12;
+let door_canteen_opened = false;
+let door_canteenCol =27;
+let door_canteenCol1 =28;
+let door_canteenRow =46;
 
 let door_switchCol =0;
 let door_switchRow =13;
+
+let fuse_door_opened = false;
+let fuse_doorCol1=36;
+let fuse_doorCol2=37;
+let fuse_doorRow=46;
 // абзац с сообщением 
 let msg = document.getElementById('msg');
 
@@ -114,6 +129,123 @@ function zombie_condition(i){
 	this.live = true;
 }
 
+/*function initWalls2(){
+for (let i =0;i<NUM_COLS;i++){
+		for (let j =0;j<NUM_ROWS;j++){
+			let pixel = walls.getImageData(i*32, j*32, 1, 1);
+			let data = pixel.data;
+			if (data[0]=231 && data[1]=112 && data[2]=4){
+				grid[i][j].wall = true;
+			}
+
+		}
+	}
+
+}*/
+
+function initWalls(){
+	//do vhoda
+	for (let i =14;i<29;i++){
+		grid[i][72].wall=true;
+	}
+	for (let i =73;i<81;i++){
+		grid[29][i].wall=true;
+	}
+	for (let i =73;i<81;i++){
+		grid[13][i].wall=true;
+	}
+	//1 floor
+	for (let i =8;i<69;i++){
+		grid[i][68].wall=true;
+	}
+	for (let i =6;i>0;i--){
+		grid[i][68].wall=true;
+	}
+
+	for (let i =67;i>57;i--){
+		grid[1][i].wall=true;
+	}
+	for (let i =1;i<11;i++){
+		grid[i][59].wall=true;
+	}
+
+	grid[10][60].wall=true;
+	
+	for (let i =10;i<17;i++){
+		grid[i][58].wall=true;
+	}
+	for (let i =51;i<63;i++){
+		grid[16][i].wall=true;
+	}
+	for (let i =10;i<16;i++){
+		grid[i][62].wall=true;
+	}
+	for (let i =8;i<16;i++){
+		grid[i][51].wall=true;
+	}
+	for (let i =50;i>45;i--){
+		grid[8][i].wall=true;
+	}
+	for (let i =9;i<48;i++){
+		grid[i][45].wall=true;
+	}
+	grid[12][45].wall=false;
+	//щитовая
+	for (let i =44;i>39;i--){
+		grid[10][i].wall=true;
+	}
+	for (let i =11;i<17;i++){
+		grid[i][40].wall=true;
+	}
+	for (let i =41;i<45;i++){
+		grid[16][i].wall=true;
+	}
+	//та прямая у лестницы и лестница 
+	for (let i =52;i<68;i++){
+		grid[26][i].wall=true;
+	}
+	grid[27][52].wall=true;
+	grid[28][52].wall=true;
+	grid[29][52].wall=true;
+	grid[30][53].wall=true;
+	grid[30][54].wall=true;
+	grid[30][55].wall=true;
+	grid[30][56].wall=true;
+
+	//баррикады
+	for (let i =31;i<39;i++){
+		grid[i][57].wall=true;
+	}
+	grid[37][56].wall=true;
+	grid[38][56].wall=true;
+
+	grid[39][55].wall=true;
+	grid[39][54].wall=true;
+	grid[39][53].wall=true;
+
+	grid[40][53].wall=true;
+	grid[41][53].wall=true;
+
+	grid[39][54].wall=true;
+	grid[39][53].wall=true;
+	for (let i =42;i<48;i++){
+		grid[i][52].wall=true;
+	}
+	for (let i =46;i<52;i++){
+		grid[47][i].wall=true;
+	}
+	//canteen and fuse_room 
+	for (let i =33;i<45;i++){
+		grid[21][i].wall=true;
+	}
+	for (let i =22;i<49;i++){
+		grid[i][34].wall=true;
+	}
+	for (let i =22;i<49;i++){
+		grid[i][34].wall=true;
+	}
+}
+
 function init(){
 	//Позиции зомби
 	ghostCol = [0,0,NUM_COLS-1,NUM_COLS-1]
@@ -135,14 +267,8 @@ function init(){
 	}
 	
 
-	for (let i=0; i <NUM_TREES; i++){
-		do {
-			treeCol[i] = Math.floor(Math.random()*NUM_COLS);
-			treeRow[i] = Math.floor(Math.random()*NUM_ROWS);
-			grid[treeCol[i]][treeRow[i]].wall=true;
-		}while ((treeCol[i]==0 || treeCol[i]==NUM_COLS) && (treeRow[i]==0 || treeRow[i]==NUM_ROWS))
-	}
-
+	
+	initWalls();
 	draw();
 	animReq=window.requestAnimationFrame(update);
 
@@ -384,25 +510,38 @@ function moveOnceKey(event){
 			if (myCol==door_canteenCol && myRow==door_canteenRow){
 				grid[myCol][myRow-1].wall = false;
 			}		
+			if ((myCol==36 || myCol==37) && myRow==fuse_doorRow && keys_picked==true && fuse_door_opened==false){
+				grid[36][45].wall = false;
+				grid[37][45].wall = false;
+				console.log("door_opened !");
+				fuse_door_opened = true;
+			}
 			if (keys_picked == true && myCol==door_switchCol && myRow==door_switchRow){
 				grid[myCol][myRow-1].wall = false;
 			}
 			if (switchboard == true && myCol==elevatorCol && myRow==elevatorRow){
-				dead = true;
-				alert("THE END!")
+				myCol=56; myRow=23;
 			}
 			if (crowbar_picked == true && myCol==elevatorCol && myRow==elevatorRow){
 				dead = true;
 				alert("THE END!")
 			}	
+
 			break;
 	}
 	if (myCol<0 || myCol>NUM_COLS-1) myCol=oldCol; 
 	if (myRow<0 || myRow>NUM_ROWS-1) myRow=oldRow;
-	if (myCol==18 && myRow==56) {
-		myCol = 18;
-		myRow = 52;
+	//Тп на внутрь кфена
+	if ((myCol==24 && myRow==74) || (myCol==23 && myRow==73) || (myCol==24 && myRow==73) || (myCol==23 && myRow==74)) {
+		myCol = 24;
+		myRow = 67;
 	}
+	//Тп на крышу
+	if (myCol==18 && myRow==13) {
+		myCol = 56;
+		myRow = 64;
+	}
+
 	if (checkWall(myCol,myRow,oldCol,oldRow)==true) {
 		myCol=oldCol;
 		myRow=oldRow;
