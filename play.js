@@ -120,6 +120,10 @@ let fuse_door_opened = false;
 let fuse_doorCol1=36;
 let fuse_doorCol2=37;
 let fuse_doorRow=46;
+
+let fifth_door_opened=false;
+let fifth_doorCol = 72;
+let fifth_doorRow = 15;
 // абзац с сообщением 
 let msg = document.getElementById('msg');
 
@@ -144,19 +148,6 @@ function zombie_condition(i){
 	this.live = true;
 }
 
-/*function initWalls2(){
-for (let i =0;i<NUM_COLS;i++){
-		for (let j =0;j<NUM_ROWS;j++){
-			let pixel = walls.getImageData(i*32, j*32, 1, 1);
-			let data = pixel.data;
-			if (data[0]=231 && data[1]=112 && data[2]=4){
-				grid[i][j].wall = true;
-			}
-
-		}
-	}
-
-}*/
 
 function initWalls(){
 	//do vhoda
@@ -320,17 +311,55 @@ function initWalls(){
 	for (let i =61;i<81;i++){
 		grid[53][i].wall=true;
 	}
+	//комнатка с магазином
+	grid[3][69].wall=true;
+	grid[3][70].wall=true;
+	grid[3][71].wall=true;
+	grid[3][72].wall=true;
+	grid[3][73].wall=true;
+
+	grid[4][73].wall=true;
+	grid[5][73].wall=true;
+	grid[6][73].wall=true;
+	grid[7][73].wall=true;
+	grid[8][73].wall=true;
+
+	grid[8][69].wall=true;
+	grid[8][70].wall=true;
+	grid[8][71].wall=true;
+	grid[8][72].wall=true;
+	grid[8][73].wall=true;
+	//отс.стена в фуз руме
+	for (let i =35;i<45;i++){
+		grid[48][i].wall=true;
+	}
+	grid[58][68].wall=false;
+	for (let i =61;i<69;i++){
+		grid[i][68].wall=false;
+	}
+
 }
-const GHOST_MOVEMENT_TIME=320;
+const GHOST_MOVEMENT_TIME=400;
 const RUNNER_MOVEMENT_TIME=200;
 
 const NUM_ZOMBIE = 13;
 let zombie_stats = [];
 let ghostRow, ghostCol = new Array (NUM_ZOMBIE);
+let bossHP = 2;
 
+let handgun_pick_up =new Audio('HANDGUN_PICK_UP.mp3');
+let item_pick_up =new Audio('ITEM_PICK_UP.mp3');
+let handgun_fire =new Audio('HANDGUN_FIRE.mp3');
+let ambience =new Audio('ambience.mp3');
+let zombie_death =new Audio('zombie_death.mp3');
+let death_sound =new Audio('death_sound.mp3');
+let a_play=0;
+
+let game_state = false;
 function init(){
+
 	//Позиции зомби
-	ghostCol = [76,24,33,44,47,9,83,12,13,12,24,28,31]
+	ghostCol = [89,24,33,44,47,9,83,12,13,12,24,28,31]
 	ghostRow = [70,18,54,50,40,48,18,85,83,81,38,37,39]
 	// Сетка 
 	for (let i =0;i<NUM_COLS;i++){
@@ -363,7 +392,10 @@ let oldghostRow = [];
 let ghst_last_mvnt_drct =[];
 let dead = false;
 function update(t){
+	if (a_play == 1) {
+		ambience.play();
 
+	}
 	for (let k=0;k<NUM_ZOMBIE;k++){ 
 		if (zombie_stats[k].live=false) {
 
@@ -454,7 +486,7 @@ function update(t){
 
 	
 
-	if (!dead) animReq=window.requestAnimationFrame(update)
+	if (!dead || game_state==true) animReq=window.requestAnimationFrame(update)
 
 
 }
@@ -517,8 +549,10 @@ function draw(){
 
 
 	context.drawImage(loc1, 0, 0);
-	if ( dead)
+	if ( dead){
 		context.drawImage(hero_corpse, myCol*32, myRow*32);
+		death_sound.play();
+	}
 	
 	for (let i=0;i<NUM_ZOMBIE; i++) {
 		if (zombie_stats[i].state!="dead"){
@@ -599,6 +633,10 @@ function draw(){
 		context.drawImage(heroFiring,60,0*32,40,64, myCol*32-8, myRow*32-32,32,64);
 	
 	}
+	if(door_canteen_opened==false ){
+		context.drawImage(door, 27*32, 45*32);
+	}
+
 
 	if (dead && myCol !=6){
 		console.log('Dead');
@@ -607,11 +645,10 @@ function draw(){
 		return draw(),context.drawImage(gameover, 4*4, 1*4);
 	}	
 
-	if (zombie_stats[0].state == "dead" && myCol !=6){
-		console.log('Win');
-		myCol = 6;
-		myRow = 8;
-		return draw(),context.drawImage(win, 3*3, 1*3);
+	if (zombie_stats[0].state == "dead"){
+		alert('КОНЕЦ!!');
+		game_state = true;
+
 	}
 
 
@@ -718,7 +755,8 @@ function moveOnceKey(event){
 			++myRow;
 			lst_mvnt_drct = "down";
 			break;
-		case 'KeyW':		
+		case 'KeyW':	
+		   a_play++;	
 			--myRow;
 			lst_mvnt_drct = "up";
 			break;
@@ -800,33 +838,42 @@ function moveOnceKey(event){
 	}
 	if (myRow==handgunRow && myCol==handgunCol && handgun_picked==false){
 		weapon = "handgun";
+		handgun_pick_up.play();
 		handgun_picked = true;
+		alert ("В магазине пистолета осталось "+ ammo+ " патрона");
 	
 	}
 	if (myRow==crowbarRow && myCol==crowbarCol && crowbar_picked==false){
 		crowbar_picked = true;
+		item_pick_up.play();
 		weapon = "crowbar";
 	
 	}
 	if (myRow==fuse1Row && myCol==fuse1Col){
 		fuse1_picked = true;
+		item_pick_up.play();
 	}
 	if (myRow==fuse2Row && myCol==fuse2Col){
 		fuse2_picked = true;
+		item_pick_up.play();
 	}
 
 	if (myRow==keysRow && myCol==keysCol){
 		keys_picked = true;	
+		item_pick_up.play();
 	}
 
 
 	if (myRow==handgun_magRow && myCol==handgun_magCol && handgun_mag_picked==false){
 		handgun_mag_picked = true;
+		item_pick_up.play();
 		ammo +=8;
 	}
 
-	if (fuse1_picked == true && fuse2_picked == true && myCol == switchboardCol && myRow == switchboardRow) {
+	if (fuse1_picked == true && fuse2_picked == true && (myCol == switchboardCol) && myRow == switchboardRow) {
 		switchboard = true;	
+		item_pick_up.play();
+		alert ("Лифт теперь работает !");
 	}
 	
 }
@@ -840,7 +887,9 @@ function checkWall(newCol,newRow,previosCol,previosRow){
 }
 
 function fire(direction){
+
 	if (weapon=="handgun" && ammo > 0) {
+		handgun_fire.play();
 		switch(direction){
 			case 'down':
 			for (let i =myRow;i<NUM_ROWS;i++){
@@ -849,6 +898,14 @@ function fire(direction){
 				}
 				for (let j =0;j<NUM_ZOMBIE;j++){
 					if (ghostRow[j]==i && ghostCol[j]==myCol){
+						console.log("Попадание");
+						if (j==0){
+							bossHP--;
+							if(bossHP==0) zombie_stats[0].state="dead";
+							ammo--;	
+							break;		
+						} 
+						zombie_death.play();
 						zombie_stats[j].state="dead";
 						firing_dir = "down";
 						ammo--;	
@@ -867,9 +924,15 @@ function fire(direction){
 				}
 				for (let j =0;j<NUM_ZOMBIE;j++){
 					if (ghostRow[j]==i && ghostCol[j]==myCol){
-
+						console.log("Попадание");
+						if (j==0){
+							bossHP--;
+							if(bossHP==0) zombie_stats[0].state="dead";
+							ammo--;	
+							break;		
+						} 
+						zombie_death.play();
 						zombie_stats[j].state="dead";
-
 						ammo--;	
 						break;								
 					}
@@ -886,7 +949,14 @@ function fire(direction){
 				}
 				for (let j =0;j<NUM_ZOMBIE;j++){
 					if (ghostCol[j]==i && ghostRow[j]==myRow){
-
+						console.log("Попадание");
+						if (j==0){
+							bossHP--;
+							if(bossHP==0) zombie_stats[0].state="dead";
+							ammo--;	
+							break;		
+						}
+						zombie_death.play();
 						zombie_stats[j].state="dead";
 						firing_dir = "right";
 						ammo--;
@@ -905,11 +975,19 @@ function fire(direction){
 				}
 				for (let j =0;j<NUM_ZOMBIE;j++){
 					if (ghostCol[j]==i && ghostRow[j]==myRow){
-
+						console.log("Попадание");
+						if (j==0){
+							bossHP--;
+							if(bossHP==0) zombie_stats[0].state="dead";
+							ammo--;	
+							break;		
+						}
+						zombie_death.play();
 						zombie_stats[j].state="dead";	
 						firing_dir = "left";
 						ammo--;
-						break;							
+						break;	
+
 					}
 				}
 			}
@@ -921,7 +999,7 @@ function fire(direction){
 	if (weapon=="crowbar") {
 		switch(direction){
 			case 'down':
-				for (let j =0;j<NUM_ZOMBIE;j++){
+				for (let j = 0;j<NUM_ZOMBIE;j++){
 					if (ghostRow[j]==myRow+1 && ghostCol[j]==myCol){
 						zombie_stats[j].state="dead";	
 						break;							
