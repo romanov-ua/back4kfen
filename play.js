@@ -45,10 +45,10 @@ let handgun_mag = document.getElementById('handgun_mag');
 let crowbar = document.getElementById('crowbar');
 
 // Переменные персонажа
-//let myCol = 20, myRow = 83;
+let myCol = 20, myRow = 83;
 //let myCol = 11, myRow = 48;
 //let myCol = 61, myRow = 21;
-let myCol = 56, myRow = 76;
+//let myCol = 56, myRow = 76;
 let lst_mvnt_drct;
 let hero_sprites = [];
 hero_sprites[0]=hero;
@@ -410,15 +410,17 @@ function update(t){
 			if (zombie_stats[i].state == "dead") {
 				context.drawImage(tree, ghostCol[i]*32, ghostRow[i]*32);
 			}
-			//if (oldghostCol[i]==ghostCol[i] && oldghostRow[i]==ghostRow[i] && zombie_stats[i].state != "dead"){
-			//	zombie_stats[i].state = "wandering"
-			//}
+			if (oldghostCol[i]==ghostCol[i] && oldghostRow[i]==ghostRow[i] && zombie_stats[i].state != "dead"){
+				zombie_stats[i].state = "wandering"
+			}
 			if (zombie_stats[i].state == "standing"){
 				
 			}
-			zombie_stats[i].state =  drawLine(ghostCol[i],ghostRow[i],myCol,myRow);
-			console.log(zombie_stats[i].state);
-			
+			if  (zombie_stats[i].state != "dead")
+			{
+				zombie_stats[i].state =  drawLine(ghostCol[i],ghostRow[i],myCol,myRow);
+				console.log(zombie_stats[i].state);
+			}
 			lines = [];
 			firing_dir="";
 		}
@@ -628,6 +630,7 @@ function moveOnceKey(event){
 
 	switch (event.code){
 		case 'KeyQ':
+
 		    if (weapon=="handgun" && crowbar_picked==true){
 		    	console.log("смена на лом")
 		    	weapon ="crowbar";
@@ -770,7 +773,10 @@ function fire(direction){
 				}
 				for (let j =0;j<NUM_ZOMBIE;j++){
 					if (ghostRow[j]==i && ghostCol[j]==myCol){
-						zombie_stats[j].state="dead";								
+						zombie_stats[j].state="dead";
+						firing_dir = "down";
+						ammo--;	
+						break;								
 					}
 				}
 			}
@@ -786,7 +792,10 @@ function fire(direction){
 				for (let j =0;j<NUM_ZOMBIE;j++){
 					if (ghostRow[j]==i && ghostCol[j]==myCol){
 
-						zombie_stats[j].state="dead";								
+						zombie_stats[j].state="dead";
+
+						ammo--;	
+						break;								
 					}
 				}
 			}
@@ -802,7 +811,10 @@ function fire(direction){
 				for (let j =0;j<NUM_ZOMBIE;j++){
 					if (ghostCol[j]==i && ghostRow[j]==myRow){
 
-						zombie_stats[j].state="dead";								
+						zombie_stats[j].state="dead";
+						firing_dir = "right";
+						ammo--;
+						break;								
 					}
 				}
 			}
@@ -818,7 +830,10 @@ function fire(direction){
 				for (let j =0;j<NUM_ZOMBIE;j++){
 					if (ghostCol[j]==i && ghostRow[j]==myRow){
 
-						zombie_stats[j].state="dead";								
+						zombie_stats[j].state="dead";	
+						firing_dir = "left";
+						ammo--;
+						break;							
 					}
 				}
 			}
@@ -832,7 +847,8 @@ function fire(direction){
 			case 'down':
 				for (let j =0;j<NUM_ZOMBIE;j++){
 					if (ghostRow[j]==myRow+1 && ghostCol[j]==myCol){
-						zombie_stats[j].state="dead";								
+						zombie_stats[j].state="dead";	
+						break;							
 					}
 				}
 			
@@ -840,7 +856,8 @@ function fire(direction){
 			case 'up':
 				for (let j =0;j<NUM_ZOMBIE;j++){
 					if (ghostRow[j]==myRow-1 && ghostCol[j]==myCol){
-						zombie_stats[j].state="dead";								
+						zombie_stats[j].state="dead";	
+						break;							
 					}
 				}
 			
@@ -849,7 +866,8 @@ function fire(direction){
 
 				for (let j =0;j<NUM_ZOMBIE;j++){
 					if (ghostCol[j]==myCol+1 && ghostRow[j]==myRow){
-						zombie_stats[j].state="dead";								
+						zombie_stats[j].state="dead";	
+						break;							
 					}
 				}
 			
@@ -859,7 +877,8 @@ function fire(direction){
 				for (let j =0;j<NUM_ZOMBIE;j++){
 					if (ghostCol[j]==myCol-1 && ghostRow[j]==myRow){
 
-						zombie_stats[j].state="dead";								
+						zombie_stats[j].state="dead";	
+						break;							
 					}
 				}
 
