@@ -1,27 +1,7 @@
-function removeFromArray(arr,elt) {
-	for (let i=arr.length-1; i>=0;i--){
-		if (arr[i] == elt) {
-			arr.splice(i,1);
-		}
-	}
-}
 
 
 
-
-//
-function Spot(i,j){
-	//Свойства клеток
-	this.col = i;
-	this.row = j;
-	this.wall = false;
-	this.item = "";
-}
-
-
-
-
-//
+//Zombie function
 function zombie_condition(i){
 	this.state = "hunting";
 	this.live = true;
