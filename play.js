@@ -345,7 +345,7 @@ const RUNNER_MOVEMENT_TIME=200;
 const NUM_ZOMBIE = 13;
 let zombie_stats = [];
 let ghostRow, ghostCol = new Array (NUM_ZOMBIE);
-let bossHP = 2;
+let bossHP = 3;
 
 let handgun_pick_up =new Audio('HANDGUN_PICK_UP.mp3');
 let item_pick_up =new Audio('ITEM_PICK_UP.mp3');
@@ -646,7 +646,7 @@ function draw(){
 		return draw(),context.drawImage(gameover, 4*4, 1*4);
 	}	
 
-	if (zombie_stats[0].state == "dead"){
+	if (zombie_stats[0].state == "dead" && game_state==false){
 		
 		
 		context.drawImage(win, 0, 0);
@@ -721,16 +721,16 @@ switch(lst_mvnt_drct){
 		case "":
 		case undefined:
 		case "right":
-			context.drawImage(hero_sprites[k],0*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			context.drawImage(hero_sprites[k],0*32,0*32,32,64, charCol*32, charRow*32+32,32,64);
 			break;
 		case "left":
-			context.drawImage(hero_sprites[k],1*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			context.drawImage(hero_sprites[k],1*32,0*32,32,64, charCol*32, charRow*32+32,32,64);
 			break;
 		case "up":
-			context.drawImage(hero_sprites[k],3*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			context.drawImage(hero_sprites[k],3*32,0*32,32,64, charCol*32, charRow*32+32,32,64);
 			break;
 		case "down":
-			context.drawImage(hero_sprites[k],2*32,0*32,32,64, charCol*32, charRow*32-32,32,64);
+			context.drawImage(hero_sprites[k],2*32,0*32,32,64, charCol*32, charRow*32+32,32,64);
 			break;
 	}	
 }
@@ -800,7 +800,7 @@ function moveOnceKey(event){
 				grid[36][45].wall = false;
 				grid[37][45].wall = false;
 				console.log("door_opened !");
-				door_sound.play();
+
 				fuse_door_opened = true;
 			}
 			if ((myCol==door_canteenCol || myCol==door_canteenCol1) && myRow==door_canteenRow+1 &&  door_canteen_opened==false){
@@ -884,6 +884,11 @@ function moveOnceKey(event){
 		switchboard = true;	
 		item_pick_up.play();
 		alert ("Лифт теперь работает !");
+	}
+
+if (switchboard == true && myCol==elevatorCol && myRow==elevatorRow){
+        alert('Нажмите Е чтобы использовать лифт');
+    
 	}
 	
 }
