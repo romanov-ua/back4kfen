@@ -73,6 +73,11 @@ let handgun_mag_picked= false;
 let handgun_magCol= 6;
 let handgun_magRow= 71;
 
+let handgun_mag_picked2= false;
+let handgun_magCol2= 76;
+let handgun_magRow2= 11;
+
+
 //Игровые вещи и скрипт локации
 let fuse1_picked = false;
 let fuse2_picked = false;
@@ -607,6 +612,9 @@ function draw(){
 	if ( handgun_mag_picked == false) {
 		context.drawImage(handgun_mag, handgun_magCol*32, handgun_magRow*32);	
 	}
+	if ( handgun_mag_picked2 == false) {
+		context.drawImage(handgun_mag, handgun_magCol2*32, handgun_magRow2*32);	
+	}
 
 	if ( keys_picked == false) {
 		context.drawImage(keys, keysCol*32, keysRow*32);	
@@ -876,6 +884,12 @@ function moveOnceKey(event){
 
 	if (myRow==handgun_magRow && myCol==handgun_magCol && handgun_mag_picked==false){
 		handgun_mag_picked = true;
+		item_pick_up.play();
+		ammo +=20;
+	}
+
+		if (myRow==handgun_magRow2 && myCol==handgun_magCol2 && handgun_mag_picked==false){
+		handgun_mag_picked2 = true;
 		item_pick_up.play();
 		ammo +=20;
 	}
