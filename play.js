@@ -342,7 +342,7 @@ function initWalls(){
 const GHOST_MOVEMENT_TIME=400;
 const RUNNER_MOVEMENT_TIME=200;
 
-const NUM_ZOMBIE = 20;
+const NUM_ZOMBIE = 23;
 let zombie_stats = [];
 let ghostRow, ghostCol = new Array (NUM_ZOMBIE);
 let bossHP = 3;
@@ -360,8 +360,8 @@ let game_state = false;
 function init(){
 
 	//Позиции зомби
-	ghostCol = [89,24,33,44,47,9,83,12,13,12,24,28,31,27,30,32,24,28,32,45]
-	ghostRow = [70,18,54,50,40,48,18,85,83,81,38,37,39,87,83,81,36,36,38,36]
+	ghostCol = [89,24,33,44,47,9,83,12,13,12,24,28,31,27,30,32,24,28,32,45,42,34,18]
+	ghostRow = [70,18,54,50,40,48,18,85,83,81,38,37,39,87,83,81,36,36,38,36,18,18,18]
 	// Сетка 
 	for (let i =0;i<NUM_COLS;i++){
 		grid[i]=new Array(NUM_ROWS);
@@ -877,7 +877,7 @@ function moveOnceKey(event){
 	if (myRow==handgun_magRow && myCol==handgun_magCol && handgun_mag_picked==false){
 		handgun_mag_picked = true;
 		item_pick_up.play();
-		ammo +=8;
+		ammo +=20;
 	}
 
 	if (fuse1_picked == true && fuse2_picked == true && (myCol == switchboardCol) && myRow == switchboardRow) {
