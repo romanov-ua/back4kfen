@@ -353,6 +353,7 @@ let handgun_fire =new Audio('HANDGUN_FIRE.mp3');
 let ambience =new Audio('ambience.mp3');
 let zombie_death =new Audio('zombie_death.mp3');
 let death_sound =new Audio('death_sound.mp3');
+let door_sound = new Audio ('door_sound.mp3');
 let a_play=0;
 
 let game_state = false;
@@ -646,8 +647,12 @@ function draw(){
 	}	
 
 	if (zombie_stats[0].state == "dead"){
+		
+		
+		context.drawImage(win, 0, 0);
 		alert('КОНЕЦ!!');
 		game_state = true;
+		return draw(),context.drawImage(win, 4*4, 1*4);
 
 	}
 
@@ -795,25 +800,30 @@ function moveOnceKey(event){
 				grid[36][45].wall = false;
 				grid[37][45].wall = false;
 				console.log("door_opened !");
+				door_sound.play();
 				fuse_door_opened = true;
 			}
 			if ((myCol==door_canteenCol || myCol==door_canteenCol1) && myRow==door_canteenRow+1 &&  door_canteen_opened==false){
 				grid[door_canteenCol][45].wall = false;
 				grid[door_canteenCol1][45].wall = false;
 				console.log("door_opened !");
+				door_sound.play();
 				door_canteen_opened = true;
 			}
 			if ((myCol==door_5floorCol || myCol==door_5floorCol1) && myRow==door_5floorRow+1 &&  door_5floor_opened==false){
 				grid[door_5floorCol][15].wall = false;
 				grid[door_5floorCol1][15].wall = false;
 				console.log("door_opened !");
+				door_sound.play();
 				door_5floor_opened = true;
 			}
 			if (keys_picked == true && myCol==door_switchCol && myRow==door_switchRow){
 				grid[myCol][myRow-1].wall = false;
+				door_sound.play();
 			}
 			if (switchboard == true && myCol==elevatorCol && myRow==elevatorRow){
 				myCol=56; myRow=23;
+				door_sound.play();
 			}
 	
 
