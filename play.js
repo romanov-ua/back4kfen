@@ -888,7 +888,7 @@ function moveOnceKey(event){
 		ammo +=20;
 	}
 
-		if (myRow==handgun_magRow2 && myCol==handgun_magCol2 && handgun_mag_picked==false){
+		if (myRow==handgun_magRow2 && myCol==handgun_magCol2 && handgun_mag_picked2==false){
 		handgun_mag_picked2 = true;
 		item_pick_up.play();
 		ammo +=20;
