@@ -342,6 +342,8 @@ function initWalls(){
 	for (let i =61;i<69;i++){
 		grid[i][68].wall=false;
 	}
+	grid[32][49].wall=true;
+	grid[49][49].wall=true;
 
 }
 const GHOST_MOVEMENT_TIME=400;
@@ -1079,4 +1081,3 @@ function fire(direction){
 
 window.onload = init;
 window.onkeyup = moveOnceKey;
-document.onmouseup = fire;
