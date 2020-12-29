@@ -343,7 +343,8 @@ function initWalls(){
 		grid[i][68].wall=false;
 	}
 	grid[32][49].wall=true;
-	grid[49][49].wall=true;
+	grid[39][49].wall=true;
+	grid[46][49].wall=true;
 
 }
 const GHOST_MOVEMENT_TIME=400;
